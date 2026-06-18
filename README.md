@@ -2,6 +2,8 @@
 
 2. Instale Composer
 
-3. git clone https://github.com/rubim666/helpdeskSystemSenac.git
+3. Instale Node.js
 
-4. Dentro do repositório: dê npm install e composer install
+4. git clone https://github.com/rubim666/helpdeskSystemSenac.git
+
+5. Dentro do repositório: dê npm install e composer install
