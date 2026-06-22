@@ -1,27 +1,53 @@
 <?php
 
-$host = "ep-green-night-acel3qx9-pooler.sa-east-1.aws.neon.tech";
-$dbname = "neondb";
-$user = "neondb_owner";
-$password = "npg_UkuLXGbqY71a";
+class Database
+{
+    private static ?PDO $pdo = null;
 
-try {
-    $dsn = "pgsql:host=$host;port=5432;dbname=$dbname;sslmode=require;options='endpoint=ep-green-night-acel3qx9'";
+    public static function getConnection(): PDO
+    {
+        if (self::$pdo !== null) {
+            return self::$pdo;
+        }
 
-    $pdo = new PDO($dsn, $user, $password);
+        try {
 
-    echo "Conectado com sucesso!<br>";
+            $env = parse_ini_file(__DIR__ . '/../.env');
 
-    $stmt = $pdo->prepare('SELECT * FROM "USUARIO"');
-    $stmt->execute();
-    $resultado = $stmt->fetchAll();
-    foreach($resultado as $result => $user){
-        echo "Usuarios " . $user['nome'] . "<br>";
+            $host = "ep-green-night-acel3qx9-pooler.sa-east-1.aws.neon.tech";
+            $dbname = "neondb";
+            $port = 5432;
 
+            $user = $env['PGUSER'];
+            $password = $env['PGPASSWORD'];
+
+            $dsn = "pgsql:host=$host;port=$port;dbname=$dbname;sslmode=require;options='endpoint=ep-green-night-acel3qx9'";
+
+            self::$pdo = new PDO(
+                $dsn,
+                $user,
+                $password
+            );
+
+            self::$pdo->setAttribute(
+                PDO::ATTR_ERRMODE,
+                PDO::ERRMODE_EXCEPTION
+            );
+
+            self::$pdo->setAttribute(
+                PDO::ATTR_DEFAULT_FETCH_MODE,
+                PDO::FETCH_ASSOC
+            );
+
+            return self::$pdo;
+
+        } catch (PDOException $e) {
+
+            throw new Exception(
+                "Erro ao conectar com banco: " . $e->getMessage()
+            );
+        }
     }
-
-} catch (PDOException $e) {
-    echo "Erro: " . $e->getMessage();
 }
 
 
