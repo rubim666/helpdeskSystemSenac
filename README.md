@@ -1,3 +1,5 @@
+## Instalação de gerenciamento de dependências (Obrigatório para rodar)
+
 1. Instale PHP
 
 2. Instale Composer
