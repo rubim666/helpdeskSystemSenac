@@ -7,3 +7,5 @@
 4. git clone https://github.com/rubim666/helpdeskSystemSenac.git
 
 5. Dentro do repositório: dê npm install e composer install
+
+6. npm run dev
