@@ -4,7 +4,7 @@ import type {
     HelpdeskStatus,
     HelpdeskTicket,
     HelpdeskUser,
-} from '@/types/helpdesk';
+} from '../types/helpdesk';
 
 export const currentUser: HelpdeskUser = {
     id: 1,
