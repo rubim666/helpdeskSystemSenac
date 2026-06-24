@@ -1,0 +1,80 @@
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap");
+
+@theme {
+    --color-brand: #d97706;
+    --color-brand-strong: #b45309;
+    --color-brand-glow: #f59e0b;
+    --color-terra: #c2553a;
+    --color-bg: #0d0c0a;
+    --color-bg-soft: #131210;
+    --color-panel: #1c1916;
+}
+
+:root {
+    color-scheme: dark;
+}
+
+* {
+    border-color: rgb(168 162 158 / 12%);
+}
+
+body {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    background:
+        radial-gradient(circle at 18% 0%, rgb(217 119 6 / 20%), transparent 42%),
+        radial-gradient(circle at 82% 5%, rgb(194 85 58 / 14%), transparent 36%),
+        linear-gradient(180deg, #0d0c0a 0%, #131210 50%, #0d0c0a 100%);
+    color: #f5f0eb;
+    min-height: 100vh;
+}
+
+#app {
+    min-height: 100vh;
+}
+
+.glass-panel {
+    background: linear-gradient(145deg, rgb(255 248 240 / 7%), rgb(255 245 235 / 2%));
+    backdrop-filter: blur(22px);
+    border: 1px solid rgb(255 245 235 / 10%);
+    box-shadow:
+        0 12px 40px rgb(0 0 0 / 40%),
+        inset 0 1px 0 rgb(255 245 235 / 10%);
+}
+
+.brand-glow {
+    box-shadow:
+        0 0 0 1px rgb(217 119 6 / 35%),
+        0 0 25px rgb(217 119 6 / 18%),
+        0 0 45px rgb(194 85 58 / 12%);
+}
+
+.octopus-grid {
+    background-image:
+        linear-gradient(rgb(168 162 158 / 6%) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(168 162 158 / 6%) 1px, transparent 1px);
+    background-size: 32px 32px;
+}
+
+.bubble {
+    position: absolute;
+    border-radius: 9999px;
+    background: radial-gradient(circle at 30% 30%, rgb(255 248 240 / 55%), rgb(217 119 6 / 14%));
+    animation: bubble-up linear infinite;
+}
+
+@keyframes bubble-up {
+    0% {
+        transform: translateY(0) scale(0.8);
+        opacity: 0;
+    }
+
+    15% {
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: translateY(-220px) scale(1.1);
+        opacity: 0;
+    }
+}
