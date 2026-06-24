@@ -1,41 +1,57 @@
-import { createInertiaApp } from '@inertiajs/react';
-import { Toaster } from '@/components/ui/sonner';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { initializeTheme } from '@/hooks/use-appearance';
-import AppLayout from '@/layouts/app-layout';
-import AuthLayout from '@/layouts/auth-layout';
-import SettingsLayout from '@/layouts/settings/layout';
+import '../css/app.css';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { HashRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 
-createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
-    layout: (name) => {
-        switch (true) {
-            case name === 'welcome':
-                return null;
-            case name.startsWith('auth/'):
-                return AuthLayout;
-            case name.startsWith('settings/'):
-            case name.startsWith('teams/'):
-                return [AppLayout, SettingsLayout];
-            default:
-                return AppLayout;
-        }
-    },
-    strictMode: true,
-    withApp(app) {
-        return (
-            <TooltipProvider delayDuration={0}>
-                {app}
-                <Toaster />
-            </TooltipProvider>
-        );
-    },
-    progress: {
-        color: '#4B5563',
-    },
-});
+import { DashboardPage } from '@/pages/dashboard-page';
+import { LoginPage } from '@/pages/login-page';
 
-// This will set light / dark mode on load...
-initializeTheme();
+function AppShell() {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const navigate = useNavigate();
+
+    async function handleLogin() {
+        await new Promise((resolve) => setTimeout(resolve, 900));
+        setIsAuthenticated(true);
+        navigate('/dashboard');
+    }
+
+    function handleLogout() {
+        setIsAuthenticated(false);
+        navigate('/login');
+    }
+
+    return (
+        <AnimatePresence mode="wait">
+            <motion.div
+                key={isAuthenticated ? 'auth' : 'guest'}
+                initial={{ opacity: 0, scale: 0.99, filter: 'blur(6px)' }}
+                animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, scale: 1.01, filter: 'blur(6px)' }}
+                transition={{ duration: 0.45, ease: 'easeOut' }}
+            >
+                <Routes>
+                    <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+                    <Route path="/dashboard/:section?" element={isAuthenticated ? <DashboardPage onLogout={handleLogout} /> : <Navigate to="/login" replace />} />
+                    <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
+                </Routes>
+            </motion.div>
+        </AnimatePresence>
+    );
+}
+
+function App() {
+    return (
+        <HashRouter>
+            <AppShell />
+        </HashRouter>
+    );
+}
+
+const container = document.getElementById('app');
+
+if (container) {
+    createRoot(container).render(<App />);
+}
