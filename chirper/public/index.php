@@ -1,20 +1,34 @@
 <?php
 
-use Illuminate\Foundation\Application;
-use Illuminate\Http\Request;
+declare(strict_types=1);
 
-define('LARAVEL_START', microtime(true));
+use App\Controllers\CategoriaController;
+use App\Controllers\ChamadoController;
+use App\Controllers\HistoricoController;
+use App\Controllers\HomeController;
+use App\Controllers\StatusController;
+use App\Controllers\UsuarioController;
+use App\Core\Router;
 
-// Determine if the application is in maintenance mode...
-if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
-    require $maintenance;
-}
+require_once __DIR__ . '/../app/Core/Database.php';
+require_once __DIR__ . '/../app/Core/Controller.php';
+require_once __DIR__ . '/../app/Core/Router.php';
 
-// Register the Composer autoloader...
-require __DIR__.'/../vendor/autoload.php';
+require_once __DIR__ . '/../app/Models/BaseModel.php';
+require_once __DIR__ . '/../app/Models/Usuario.php';
+require_once __DIR__ . '/../app/Models/Chamado.php';
+require_once __DIR__ . '/../app/Models/Categoria.php';
+require_once __DIR__ . '/../app/Models/Historico.php';
+require_once __DIR__ . '/../app/Models/Status.php';
 
-// Bootstrap Laravel and handle the request...
-/** @var Application $app */
-$app = require_once __DIR__.'/../bootstrap/app.php';
+require_once __DIR__ . '/../app/Controllers/HomeController.php';
+require_once __DIR__ . '/../app/Controllers/UsuarioController.php';
+require_once __DIR__ . '/../app/Controllers/ChamadoController.php';
+require_once __DIR__ . '/../app/Controllers/CategoriaController.php';
+require_once __DIR__ . '/../app/Controllers/HistoricoController.php';
+require_once __DIR__ . '/../app/Controllers/StatusController.php';
 
-$app->handleRequest(Request::capture());
+$router = new Router();
+require __DIR__ . '/../routes/web.php';
+
+$router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
