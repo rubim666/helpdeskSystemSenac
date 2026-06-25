@@ -79,6 +79,9 @@ class User{
         }
         $this->email = $email;
     }
+    public function getSenha():string{
+        return $this->senha;
+    }
     public function alterarSenha(string $senha):void{
         $this->senha = $senha;
     }
