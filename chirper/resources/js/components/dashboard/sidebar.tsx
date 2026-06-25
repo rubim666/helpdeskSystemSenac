@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { Activity, BookCheck, LayoutGrid, ListChecks, Ticket, Users } from 'lucide-react';
+import { Activity, BookCheck, LayoutGrid, ListChecks, Ticket, Users, ClipboardPlus } from 'lucide-react';
 import type React from 'react';
 import { NavLink } from 'react-router-dom';
 
-import type { DashboardSection } from '@/types/helpdesk';
+import type { DashboardSection } from '../../types/helpdesk';
 
 const items: { key: DashboardSection; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { key: 'overview', label: 'Dashboard', icon: LayoutGrid },
@@ -12,6 +12,7 @@ const items: { key: DashboardSection; label: string; icon: React.ComponentType<{
     { key: 'categorias', label: 'Categoria', icon: BookCheck },
     { key: 'historico', label: 'Histórico', icon: ListChecks },
     { key: 'status', label: 'Status', icon: Activity },
+    { key: 'criarChamado', label: 'Criar Chamado', icon: ClipboardPlus }
 ];
 
 export function Sidebar() {

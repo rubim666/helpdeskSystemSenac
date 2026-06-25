@@ -123,6 +123,16 @@ export function DashboardPage({ onLogout }: DashboardPageProps) {
                                     description="O polvo está organizando o timeline de interações para este módulo."
                                 />
                             ) : null}
+                            {section === 'criarChamado' ? (
+                                <Card>
+                                    <CardContent className="space-y-3 py-4">
+                                            <div key="criarChamado" className="flex items-center justify-between rounded-xl bg-stone-800/45 p-3">
+                                                <p className="capitalize text-stone-100">Criar Chamado</p>
+                                                <Badge variant="success">Ativo</Badge>
+                                            </div>
+                                    </CardContent>
+                                </Card>
+                            ) : null}
                         </motion.div>
                     </AnimatePresence>
                 </section>
@@ -133,6 +143,8 @@ export function DashboardPage({ onLogout }: DashboardPageProps) {
                     { key: 'overview', label: 'Home' },
                     { key: 'chamados', label: 'Chamados' },
                     { key: 'usuarios', label: 'Usuários' },
+                    { key: 'criarChamado', label: 'Criar Chamado' },
+
                 ].map((item) => (
                     <NavLink
                         key={item.key}
