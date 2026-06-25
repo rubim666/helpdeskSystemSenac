@@ -1,7 +1,7 @@
 export type UserRole = 'adm' | 'analista' | 'tecnico' | 'usuario';
 export type TicketPriority = 'baixa' | 'media' | 'alta' | 'muito alta';
 export type TicketStatus = 'pendente' | 'cancelado' | 'concluido';
-export type DashboardSection = 'overview' | 'usuarios' | 'chamados' | 'categorias' | 'historico' | 'status';
+export type DashboardSection = 'overview' | 'usuarios' | 'chamados' | 'categorias' | 'historico' | 'status' | 'criarChamado';
 
 export interface HelpdeskUser {
     id: number;
