@@ -166,22 +166,6 @@ class Ticket {
     public function setIdResponsavel(?int $id_responsavel): void {
         $this->id_responsavel = $id_responsavel;
     }
-
-    public function criar() {
-        return;
-    }
-    
-    public function atualizar() {
-        return;
-    }
-
-    public function encerrar() {
-        return;
-    }
-
-    public function atribuirTecnico() {
-        return;
-    }
 }
  
 ?>
