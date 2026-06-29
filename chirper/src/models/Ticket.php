@@ -15,8 +15,6 @@ class Ticket {
     protected int $id_responsavel;
  
     public function __construct(
-        int $id,
-        int $uuid,
         string $titulo,
         string $descricao,
         string $prioridade,
@@ -37,8 +35,6 @@ class Ticket {
         throw new InvalidArgumentException('Telefone inválido');
         }
 
-        $this->id = $id;
-        $this->uuid = $uuid;
         $this->titulo = $titulo;
         $this->descricao = $descricao;
         $this->prioridade = $prioridade;
