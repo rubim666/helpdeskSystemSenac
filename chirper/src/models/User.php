@@ -10,7 +10,8 @@ class User{
     protected string $nivel;
     protected bool $ativo;
 
-    public function __construct(int $id , string $uuid , string $nome ,string $cpf , string $telefone , 
+    public function __construct( ?int $id = null,
+        ?string $uuid = null , string $nome ,string $cpf , string $telefone , 
     string $email , string $senha, string $nivel = 'usuario', bool $ativo = true)
     {
         if (empty($nome)) {
@@ -24,7 +25,6 @@ class User{
         if (empty($email)) {
             throw new InvalidArgumentException('Email inválido');
         }
-
         $this->id = $id;
         $this->uuid = $uuid;
         $this->nome = $nome;
