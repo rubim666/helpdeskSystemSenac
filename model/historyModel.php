@@ -4,7 +4,7 @@ require_once '../helpdeskSystemSenac/testeneon.php';
 
 
 class History {
-    private int $uuid;
+    private string $uuid;
     private string $descricao;
     private DateTime $data;
     private int $id_usuario_tecnico;
@@ -60,17 +60,18 @@ class History {
     }
 
     # Função para criar o historico
-    public function createUsuario(string $descricao, DateTime $data, int $id_chamado, int $id_usuario_tecnico) {
+    public function createUsuario(string $uuid, string $descricao, DateTime $data, int $id_chamado, int $id_usuario_tecnico) {
 
     try {
     $db = new Database();
 
    
     $stmt = $db->getConnection()->prepare(
-        "INSERT INTO historico (descricao, data, id_chamado, id_usuario_tecnico) VALUES (?, ?, ?, ?)"
+        'INSERT INTO "HISTORICO" (uuid, descricao, data, id_chamado, id_usuario_tecnico) VALUES (?, ?, ?, ?, ?)'
     );
 
     $params = [
+    $uuid,
     $descricao,
     $data->format('Y-m-d H:i:s'),
     $id_chamado,

@@ -13,13 +13,23 @@ try {
         0
     );
 
-   
-    $descricao = "Primeiro teste de histórico";
+    $uuid = sprintf(
+    '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+    mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+    mt_rand(0, 0xffff),
+    mt_rand(0, 0x0fff) | 0x4000,
+    mt_rand(0, 0x3fff) | 0x8000,
+    mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+    );
+
+
+    $descricao = "GABRIEL BAITOLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     $data = new DateTime();
     $idChamado = 1;
     $idTecnico = 2;
 
     $history->createUsuario(
+        $uuid,
         $descricao,
         $data,
         $idChamado,
@@ -29,5 +39,5 @@ try {
     echo "Histórico inserido com sucesso!";
 
 } catch (Exception $e) {
-    echo "Erro: " . $e->getMessage();
+    throw $e;
 }
