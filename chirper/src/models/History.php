@@ -22,6 +22,20 @@ class History{
     public function getDescricao():string{
         return $this->descricao;
     }
+
+    public function setData(DateTime $data): void {
+        if (empty($data)) {
+        throw new InvalidArgumentException('Data inválida');
+        }
+        $this->data = $data;
+    }
+    
+    public function setDescricao(string $descricao): void {
+        if (empty($descricao)) {
+        throw new InvalidArgumentException('Descrição inválida');
+        }
+        $this->descricao = $descricao;
+    } 
 }
 
 ?>
