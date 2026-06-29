@@ -71,10 +71,10 @@ class History {
     );
 
     $params = [
-        $descricao, 
-        $data,
-        $id_chamado,
-        $id_usuario_tecnico
+    $descricao,
+    $data->format('Y-m-d H:i:s'),
+    $id_chamado,
+    $id_usuario_tecnico
     ];
 
     $stmt->execute($params);
