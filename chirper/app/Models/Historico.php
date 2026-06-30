@@ -60,17 +60,17 @@ class History {
     }
 
     # Função para pegar pelo id
-    public static function getIdHistory(int $uuid) {
+    public static function getIdHistory(int $id) {
 
         try {
             $db = new Database();
 
             $stmt = $db->getConnection()->prepare(
-                'SELECT * FROM "HISTORICO" WHERE uuid = ?'
+                'SELECT * FROM "HISTORICO" WHERE id = ?'
             );
 
             $params = [
-                $uuid,
+                $id,
             ];
 
             $stmt->execute($params);

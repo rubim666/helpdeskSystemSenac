@@ -5,7 +5,7 @@ require_once "./chirper/app/Models/Historico.php";
 class HistoryController {
 
 
-    public function createHistory(int $id_tecnico, int $id_chamado) {
+    public static function createHistory(int $id_tecnico, int $id_chamado) {
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
@@ -31,6 +31,14 @@ class HistoryController {
                         $id_tecnico
                     );
 
+        }
+    }
+
+    public static function getId(string $id) {
+        if (!empty($id)) {
+            History::getIdHistory($id);
+        } elseif (empty($id)) {
+            echo "Sessão interrompida";
         }
     }
 }
