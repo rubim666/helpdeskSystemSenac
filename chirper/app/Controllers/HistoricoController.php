@@ -1,18 +1,36 @@
 <?php
 
-namespace App\Controllers;
+require_once "./chirper/app/Models/Historico.php";
 
-use App\Core\Controller;
-use App\Models\Historico;
+class HistoryController {
 
-class HistoricoController extends Controller
-{
-    public function index(): void
-    {
-        $model = new Historico();
-        $this->render('historico/index', [
-            'table' => $model->table(),
-            'fields' => $model->fillable(),
-        ]);
+
+    public function createHistory(int $id_tecnico, int $id_chamado) {
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+            $uuid = $_POST['uuid'];
+            $description = $_POST['description'];
+            $date = $_POST['date'];
+
+
+            $history = new History(
+                        0,
+                        "",
+                        new DateTime(),
+                        0,
+                        0
+                    );
+
+
+            $history->createUsuario(
+                        $uuid,
+                        $description,
+                        $date,
+                        $id_chamado,
+                        $id_tecnico
+                    );
+
+        }
     }
 }
