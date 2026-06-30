@@ -34,7 +34,7 @@ class HistoryController {
         }
     }
 
-    public static function getId(string $id) {
+    public static function getId(int $id) {
         if (!empty($id)) {
             History::getIdHistory($id);
         } elseif (empty($id)) {
