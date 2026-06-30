@@ -59,31 +59,31 @@ class History {
         $this->data = $data;
     }
 
-    # Função para pegar pelo id
-    public static function getIdHistory(int $id) {
+    public static function getIdHistory(int $id): string
+{
+    try {
 
-        try {
-            $db = new Database();
+        $db = new Database();
 
-            $stmt = $db->getConnection()->prepare(
-                'SELECT * FROM "HISTORICO" WHERE id = ?'
-            );
+        $stmt = $db->getConnection()->prepare(
+            'SELECT * FROM "HISTORICO" WHERE id = ?'
+        );
 
-            $params = [
-                $id,
-            ];
+        $stmt->execute([$id]);
 
-            $stmt->execute($params);
+        $history = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            } catch (PDOException $e) {
-            echo "Erro: " . $e->getMessage();
-        };
+        return json_encode($history);
 
+    } catch (PDOException $e) {
 
+        return json_encode([
+            "erro" => $e->getMessage()
+        ]);
     }
+}
     
 
-    # Função para criar o historico
     public function createUsuario(string $uuid, string $descricao, DateTime $data, int $id_chamado, int $id_usuario_tecnico) {
 
     try {
