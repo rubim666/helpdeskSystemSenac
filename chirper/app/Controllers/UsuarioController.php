@@ -9,7 +9,7 @@ class UsuarioController extends Controller
 {
     public function index(): void
     {
-        $model = new Usuario();
+        $model = new User();
         $this->render('usuario/index', [
             'table' => $model->table(),
             'fields' => $model->fillable(),
