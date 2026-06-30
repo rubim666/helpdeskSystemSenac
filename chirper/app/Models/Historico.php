@@ -1,6 +1,6 @@
 <?php
 
-require_once '../helpdeskSystemSenac/testeneon.php';
+require_once './chirper/src/configs/Database.php';
 
 
 class History {
