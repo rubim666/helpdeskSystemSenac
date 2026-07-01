@@ -35,10 +35,10 @@ export interface HelpdeskTicket {
     titulo: string;
     patrimonio: string;
     prioridade: TicketPriority;
-    categoria: HelpdeskCategory;
-    solicitante: HelpdeskUser;
-    responsavel?: HelpdeskUser;
-    status: HelpdeskStatus;
+    categoria: string;
+    solicitante: string;
+    responsavel?: string;
+    status: TicketStatus;
 }
 
 export interface DashboardMetric {

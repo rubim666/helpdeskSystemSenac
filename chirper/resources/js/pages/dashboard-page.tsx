@@ -22,6 +22,7 @@ import {
   tickets,
   users,
 } from "../data/mock";
+import { useChamados } from "../hooks/useChamados";
 import type { DashboardSection } from "../types/helpdesk";
 import AnimatedButton from "../components/dashboard/button-animated";
 
@@ -53,6 +54,8 @@ export function DashboardPage({ onLogout }: DashboardPageProps) {
   const { section: sectionParam } = useParams();
   const section = normalizeSection(sectionParam);
   const [loading, setLoading] = useState(true);
+
+  const { chamados, isLoading: isChamadosLoading, error: chamadosError } = useChamados();
 
   useEffect(() => {
     const timeout = setTimeout(() => setLoading(false), 950);
@@ -127,7 +130,23 @@ export function DashboardPage({ onLogout }: DashboardPageProps) {
                   </CardContent>
                 </Card>
               ) : null}
-              {section === "chamados" ? <AnimatedTable rows={tickets} /> : null}
+              {section === "chamados" ? (
+                isChamadosLoading ? (
+                  <SkeletonGrid />
+                ) : chamadosError ? (
+                  <EmptyState
+                    title="Erro ao carregar chamados"
+                    description="Não foi possível conectar com o servidor. Verifique se o backend está rodando."
+                  />
+                ) : chamados.length === 0 ? (
+                  <EmptyState
+                    title="Nenhum chamado encontrado"
+                    description="O polvo ainda não encontrou chamados cadastrados no sistema."
+                  />
+                ) : (
+                  <AnimatedTable rows={chamados} />
+                )
+              ) : null}
               {section === "categorias" ? (
                 <Card>
                   <CardContent className="grid grid-cols-2 gap-3 py-4 sm:grid-cols-4">

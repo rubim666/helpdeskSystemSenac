@@ -1,33 +1,14 @@
 <?php
 
-class Database
-{
-    private static ?PDO $pdo = null;
+$env = parse_ini_file(__DIR__ . '/../../.env');
 
-    public static function getConnection(): PDO
-    {
-        if (self::$pdo !== null) {
-            return self::$pdo;
-        }
-
-        try {
-
-            $env = parse_ini_file(__DIR__ . '/../../.env');
-
-            $host = "ep-green-night-acel3qx9-pooler.sa-east-1.aws.neon.tech";
-            $dbname = "neondb";
-            $port = 5432;
-
-            $user = $env['PGUSER'];
-            $password = $env['PGPASSWORD'];
-
-            $dsn = "pgsql:host=$host;port=$port;dbname=$dbname;sslmode=require;options='endpoint=ep-green-night-acel3qx9'";
-
-            self::$pdo = new PDO(
-                $dsn,
-                $user,
-                $password
-            );
+return [
+    'host'     => 'ep-green-night-acel3qx9-pooler.sa-east-1.aws.neon.tech',
+    'port'     => 5432,
+    'dbname'   => 'neondb',
+    'user'     => $env['PGUSER'] ?? '',
+    'password' => $env['PGPASSWORD'] ?? '',
+];
 
             self::$pdo->setAttribute(
                 PDO::ATTR_ERRMODE,
