@@ -15,16 +15,18 @@ class Ticket {
     protected int $id_responsavel;
  
     public function __construct(
+        ?int $id = null,
+        ?int $uuid = null,
         string $titulo,
         string $descricao,
         string $prioridade,
         string $patrimonio,
         string $status,
-        DateTime $dataAbertura,
-        DateTime $dataEncerramento,
-        int $id_categoria,
-        int $id_usuario,
-        int $id_responsavel
+        ?DateTime $dataAbertura,
+        ?DateTime $dataEncerramento = null,
+        ?int $id_categoria = null,
+        int $id_usuario = 0,
+        ?int $id_responsavel = null
     )
     {
         if (empty($titulo)) {
@@ -35,6 +37,8 @@ class Ticket {
         throw new InvalidArgumentException('Telefone inválido');
         }
 
+        $this->id = $id;
+        $this->uuid = $uuid;
         $this->titulo = $titulo;
         $this->descricao = $descricao;
         $this->prioridade = $prioridade;
@@ -121,6 +125,9 @@ class Ticket {
         ];
     }
 
+    public function toJson(): string {
+        return json_encode($this->getAll());
+    }
 
     public function setTitulo(string $titulo): void {
         if (empty($titulo)) {
@@ -164,4 +171,9 @@ class Ticket {
     }
 }
  
+
+$teste = new Ticket(1, 1, "titulo", "descricao descricao", "baixa", "pat-01", "ativo", new Datetime("2026-01-01"), new Datetime("2026-01-01"), 1, 1, 1);
+echo "<prev>";
+echo $teste->toJson();
+echo "</prev>";
 ?>
