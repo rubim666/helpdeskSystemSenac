@@ -6,6 +6,6 @@ class CalledController
 {
     public function index(): void
     {
-        // TODO: implement called listing
+        
     }
 }
