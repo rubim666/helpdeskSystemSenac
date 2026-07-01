@@ -22,7 +22,9 @@ class TicketServices {
         string $descricao,
         string $prioridade,
         string $patrimonio,
-        string $status
+        string $status,
+        int $id_categoria,
+        int $id_usuario
     ): Ticket
     {
         $ticket = new Ticket (
@@ -31,7 +33,9 @@ class TicketServices {
             $descricao,
             $prioridade,
             $patrimonio,
-            $status
+            $status,
+            $id_categoria,
+            $id_usuario
         );
 
         return $this->repository->save($ticket);
@@ -75,7 +79,7 @@ class TicketServices {
             throw new \Exception("Ticket não encontrado!");
         }
 
-        $ticket->setTecnicoId($tecnicoId);
+        $ticket->setIdResponsavel($tecnicoId);
         $ticket->setStatus("Em andamento");
 
         return $this->repository->update($ticket); 

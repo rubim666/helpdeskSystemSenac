@@ -1,4 +1,8 @@
 <?php
+namespace src\models;
+
+use DateTime;
+use InvalidArgumentException;
 
 class Ticket {
     protected int $id;
@@ -16,17 +20,17 @@ class Ticket {
  
     public function __construct(
         int $id,
-        int $uuid,
         string $titulo,
         string $descricao,
         string $prioridade,
         string $patrimonio,
         string $status,
-        DateTime $dataAbertura,
-        DateTime $dataEncerramento,
-        int $id_categoria,
-        int $id_usuario,
-        int $id_responsavel
+        ?int $id_categoria = null,
+        int $id_usuario = 0,
+        ?int $id_responsavel = null,
+        ?string $uuid = null,
+        ?DateTime $dataAbertura = null,
+        ?DateTime $dataEncerramento = null
     )
     {
         if (empty($titulo)) {
