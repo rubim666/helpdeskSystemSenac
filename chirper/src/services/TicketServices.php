@@ -7,6 +7,7 @@ use src\models\Ticket;
 require_once __DIR__ . "/../models/Ticket.php";
 require_once __DIR__ . "/../repositories/TicketRepository.php";
 
+//Codificação dos metodos
 class TicketServices {
 
     private TicketRepository $repository;
