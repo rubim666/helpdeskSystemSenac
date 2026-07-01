@@ -28,7 +28,6 @@ class TicketRepository{
             $stmt->execute();
             $dados = $stmt->fetchAll();
             $tickets = [];
-      
             foreach($dados as $linha){
                 $dataAberturaObj = !empty($linha['data_abertura']) ? new DateTime($linha['data_abertura']) : null;
                 $dataEncerramentoObj = !empty($linha['data_encerramento']) ? new DateTime($linha['data_encerramento']) : null;
