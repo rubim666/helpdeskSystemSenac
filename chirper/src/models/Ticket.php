@@ -2,31 +2,31 @@
 
 class Ticket {
     protected int $id;
-    protected int $uuid;
+    protected string $uuid;
     protected string $titulo;
     protected string $descricao;
-    protected string $prioridade;
+    protected ?string $prioridade;
     protected string $patrimonio;
     protected string $status;
-    protected DateTime $dataAbertura;
-    protected DateTime $dataEncerramento;
-    protected int $id_categoria;
+    protected ?DateTime $dataAbertura;
+    protected ?DateTime $dataEncerramento;
+    protected ?int $id_categoria;
     protected int $id_usuario;
-    protected int $id_responsavel;
+    protected ?int $id_responsavel;
  
     public function __construct(
         int $id,
-        int $uuid,
         string $titulo,
         string $descricao,
-        string $prioridade,
+        ?string $prioridade = null,
         string $patrimonio,
         string $status,
-        DateTime $dataAbertura,
-        DateTime $dataEncerramento,
-        int $id_categoria,
-        int $id_usuario,
-        int $id_responsavel
+        ?int $id_categoria = null,
+        int $id_usuario = 0,
+        ?int $id_responsavel = null,
+        ?string $uuid = null,
+        ?DateTime $dataAbertura = null,
+        ?DateTime $dataEncerramento = null
     )
     {
         if (empty($titulo)) {
