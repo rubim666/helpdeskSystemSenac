@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set('America/Sao_Paulo');
+
 class Ticket {
     protected int $id;
     protected int $uuid;
@@ -79,12 +81,14 @@ class Ticket {
         return $this->status;
     }
 
-    public function getDataAbertura(): DateTime {
-        return $this->dataAbertura;
+    public function getDataAbertura(): ?DateTime {
+        $date = new DateTime();
+        return $this->dataAbertura->$date->format('d-m-Y H:i:s');
     }
 
     public function getDataEncerramento(): DateTime {
-        return $this->dataEncerramento;
+        $date = new DateTime();
+        return $this->dataEncerramento->$date->format('d-m-Y H:i:s');
     }
 
     public function getIdCategoria(): int {
@@ -172,8 +176,22 @@ class Ticket {
 }
  
 
-$teste = new Ticket(1, 1, "titulo", "descricao descricao", "baixa", "pat-01", "ativo", new Datetime("2026-01-01"), new Datetime("2026-01-01"), 1, 1, 1);
+$teste = new Ticket(1, 1, "titulo", "descricao descricao", "baixa", "pat-01", "ativo", new Datetime(), new Datetime(), 1, 1, 1);
 echo "<prev>";
 echo $teste->toJson();
+echo "<br>";
+echo "<br>";
+echo $teste->getId();
+echo $teste->getUuid();
+echo $teste->getTitulo();
+echo $teste->getDescricao();
+echo $teste->getPrioridade();
+echo $teste->getPatrimonio();
+echo $teste->getStatus();
+echo $teste->getDataAbertura();
+// echo $teste->getDataEncerramento();
+echo $teste->getIdCategoria();
+echo $teste->getIdResponsavel();
+echo $teste->getIdUsuario();
 echo "</prev>";
 ?>
