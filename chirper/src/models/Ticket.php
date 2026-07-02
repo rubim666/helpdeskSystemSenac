@@ -2,31 +2,31 @@
 
 class Ticket {
     protected int $id;
-    protected int $uuid;
+    protected string $uuid;
     protected string $titulo;
     protected string $descricao;
-    protected string $prioridade;
+    protected ?string $prioridade;
     protected string $patrimonio;
     protected string $status;
-    protected DateTime $dataAbertura;
-    protected DateTime $dataEncerramento;
-    protected int $id_categoria;
+    protected ?DateTime $dataAbertura;
+    protected ?DateTime $dataEncerramento;
+    protected ?int $id_categoria;
     protected int $id_usuario;
-    protected int $id_responsavel;
+    protected ?int $id_responsavel;
  
     public function __construct(
-        ?int $id = null,
-        ?int $uuid = null,
+        int $id,
         string $titulo,
         string $descricao,
-        string $prioridade,
+        ?string $prioridade = null,
         string $patrimonio,
         string $status,
-        ?DateTime $dataAbertura,
-        ?DateTime $dataEncerramento = null,
         ?int $id_categoria = null,
         int $id_usuario = 0,
-        ?int $id_responsavel = null
+        ?int $id_responsavel = null,
+        ?string $uuid = null,
+        ?DateTime $dataAbertura = null,
+        ?DateTime $dataEncerramento = null
     )
     {
         if (empty($titulo)) {
@@ -172,7 +172,7 @@ class Ticket {
 }
  
 
-$teste = new Ticket(1, 1, "titulo", "descricao descricao", "baixa", "pat-01", "ativo", new Datetime("2026-01-01"), new Datetime("2026-01-01"), 1, 1, 1);
+$teste = new Ticket(1, "titulo", "descricao descricao", "baixa", "pat-01", "ativo", 1, 1, 1, null, new DateTime("2026-01-01"), new DateTime("2026-01-01"));
 echo "<prev>";
 echo $teste->toJson();
 echo "</prev>";
