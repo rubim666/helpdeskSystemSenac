@@ -1,7 +1,5 @@
 <?php
 
-__DIR__ . '../../../.env';
-
 class Database
 {
     private static ?PDO $pdo = null;
