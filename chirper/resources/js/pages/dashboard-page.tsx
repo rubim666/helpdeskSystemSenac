@@ -23,12 +23,29 @@ import {
   users,
 } from "../data/mock";
 import { useChamados } from "../hooks/useChamados";
-import type { DashboardSection } from "../types/helpdesk";
+import { createChamado } from "../services/chamadoService";
+import type { CreateHelpdeskTicket, DashboardSection, TicketPriority } from "../types/helpdesk";
 import AnimatedButton from "../components/dashboard/button-animated";
 
 interface DashboardPageProps {
   onLogout: () => void;
 }
+
+interface TicketFormState {
+  titulo: string;
+  patrimonio: string;
+  descricao: string;
+  prioridade: TicketPriority;
+  id_categoria: number;
+}
+
+const initialTicketFormState: TicketFormState = {
+  titulo: "",
+  patrimonio: "",
+  descricao: "",
+  prioridade: "media",
+  id_categoria: categories[0]?.id ?? 1,
+};
 
 function normalizeSection(sectionParam?: string): DashboardSection {
   const fallback: DashboardSection = "overview";
@@ -54,14 +71,100 @@ export function DashboardPage({ onLogout }: DashboardPageProps) {
   const { section: sectionParam } = useParams();
   const section = normalizeSection(sectionParam);
   const [loading, setLoading] = useState(true);
+  const [ticketForm, setTicketForm] = useState<TicketFormState>(initialTicketFormState);
+  const [ticketError, setTicketError] = useState<string | null>(null);
+  const [ticketSuccess, setTicketSuccess] = useState<string | null>(null);
+  const [isSubmittingTicket, setIsSubmittingTicket] = useState(false);
 
-  const { chamados, isLoading: isChamadosLoading, error: chamadosError } = useChamados();
+  const {
+    chamados,
+    isLoading: isChamadosLoading,
+    error: chamadosError,
+    refreshChamados,
+  } = useChamados();
 
   useEffect(() => {
     const timeout = setTimeout(() => setLoading(false), 950);
 
     return () => clearTimeout(timeout);
   }, []);
+
+  function handleTicketFieldChange(
+    field: keyof TicketFormState,
+    value: string | number,
+  ) {
+    setTicketForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
+
+    if (ticketError) {
+      setTicketError(null);
+    }
+  }
+
+  function validateTicketForm(): string | null {
+    if (ticketForm.titulo.trim().length < 3) {
+      return "Informe um título com pelo menos 3 caracteres.";
+    }
+
+    if (ticketForm.patrimonio.trim() === "") {
+      return "Informe o patrimônio do equipamento.";
+    }
+
+    if (ticketForm.descricao.trim().length < 5) {
+      return "Informe uma descrição com pelo menos 5 caracteres.";
+    }
+
+    if (!ticketForm.id_categoria) {
+      return "Selecione uma categoria.";
+    }
+
+    return null;
+  }
+
+  async function handleCreateTicket(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (isSubmittingTicket) {
+      return;
+    }
+
+    const validationError = validateTicketForm();
+
+    if (validationError) {
+      setTicketSuccess(null);
+      setTicketError(validationError);
+      return;
+    }
+
+    setIsSubmittingTicket(true);
+    setTicketError(null);
+    setTicketSuccess(null);
+
+    const payload: CreateHelpdeskTicket = {
+      titulo: ticketForm.titulo.trim(),
+      descricao: ticketForm.descricao.trim(),
+      patrimonio: ticketForm.patrimonio.trim(),
+      prioridade: ticketForm.prioridade,
+      status: "pendente",
+      id_categoria: ticketForm.id_categoria,
+      id_usuario: currentUser.id,
+      id_responsavel: null,
+    };
+
+    try {
+      const response = await createChamado(payload);
+      setTicketForm(initialTicketFormState);
+      setTicketSuccess(response.message);
+      await refreshChamados();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Erro ao criar chamado";
+      setTicketError(message);
+    } finally {
+      setIsSubmittingTicket(false);
+    }
+  }
 
   return (
     <main className="min-h-screen p-4 md:p-6">
@@ -189,57 +292,128 @@ export function DashboardPage({ onLogout }: DashboardPageProps) {
               {section === "criarChamado" ? (
                 <Card>
                   <CardContent className="space-y-3 py-4">
-                    
-                      <p className="capitalize text-stone-100">Criar Chamado</p>
-                      {/* Título, patrimônio, Descrição */}
-                      <form>
-
-                        <div className="space-y-12">
-                            <div
-                            key="criarChamado"
-                            style={{fontSize: "30px"}}
-                            className="flex items-center text-[14px]"
-                            >
-                            </div>
-
-                          <div className="border-b border-white/10 pb-12">
-                            <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-                              <div className="sm:col-span-4">
-                                <label
-                                  htmlFor="nome"
-                                  className="block text-sm/6 font-medium text-white"
-                                >
-                                  Nome
-                                </label>
-                                <div className="mt-2">
-                                  <div className="flex items-center rounded-md bg-white/5 pl-3 outline-1 -outline-offset-1 outline-white/10 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-500">
-                                    <div className="shrink-0 text-base text-gray-400 select-none sm:text-sm/6">
-                                    </div>
-                                    <input
-                                      id="nome"
-                                      type="text"
-                                      name="nome"
-                                      placeholder="janesmith"
-                                      className="block min-w-0 grow bg-transparent py-1.5 pr-3 pl-1 text-base text-white placeholder:text-gray-500 focus:outline-none sm:text-sm/6"
-                                    />
-                                  </div>
-
-                                <div className="col-span-full">
-                                  <div className="mt-4"></div>
-                                  <label htmlFor="about" className="block text-sm/6 font-medium text-white">Descrição</label>
-                                  <p className="mt-3 text-sm/6 text-gray-400">Descreva o problema.</p>
-                                  <div className="mt-2">
-                                    <textarea id="about" name="about" rows={3} className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"></textarea>
-                                  </div>
-                                </div>
-                                <div className="mt-4"></div>
-                                  <AnimatedButton />
-                                </div>
+                    <p className="capitalize text-stone-100">Criar Chamado</p>
+                    <form onSubmit={handleCreateTicket} className="space-y-6">
+                      <div className="border-b border-white/10 pb-8">
+                        <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
+                          <div className="sm:col-span-4">
+                            <label htmlFor="titulo" className="block text-sm/6 font-medium text-white">
+                              Título
+                            </label>
+                            <div className="mt-2">
+                              <div className="flex items-center rounded-md bg-white/5 pl-3 outline-1 -outline-offset-1 outline-white/10 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-500">
+                                <input
+                                  id="titulo"
+                                  type="text"
+                                  name="titulo"
+                                  value={ticketForm.titulo}
+                                  onChange={(event) => handleTicketFieldChange("titulo", event.target.value)}
+                                  placeholder="Ex: Computador sem acesso ao sistema"
+                                  className="block min-w-0 grow bg-transparent py-1.5 pr-3 pl-1 text-base text-white placeholder:text-gray-500 focus:outline-none sm:text-sm/6"
+                                />
                               </div>
                             </div>
                           </div>
+
+                          <div className="sm:col-span-2">
+                            <label htmlFor="patrimonio" className="block text-sm/6 font-medium text-white">
+                              Patrimônio
+                            </label>
+                            <div className="mt-2">
+                              <div className="flex items-center rounded-md bg-white/5 pl-3 outline-1 -outline-offset-1 outline-white/10 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-500">
+                                <input
+                                  id="patrimonio"
+                                  type="text"
+                                  name="patrimonio"
+                                  value={ticketForm.patrimonio}
+                                  onChange={(event) => handleTicketFieldChange("patrimonio", event.target.value)}
+                                  placeholder="Ex: PATR-1001"
+                                  className="block min-w-0 grow bg-transparent py-1.5 pr-3 pl-1 text-base text-white placeholder:text-gray-500 focus:outline-none sm:text-sm/6"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="sm:col-span-3">
+                            <label htmlFor="prioridade" className="block text-sm/6 font-medium text-white">
+                              Prioridade
+                            </label>
+                            <select
+                              id="prioridade"
+                              name="prioridade"
+                              value={ticketForm.prioridade}
+                              onChange={(event) => handleTicketFieldChange("prioridade", event.target.value as TicketPriority)}
+                              className="mt-2 block w-full rounded-md bg-white/5 px-3 py-2 text-base text-white outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                            >
+                              <option value="baixa" className="bg-stone-900">Baixa</option>
+                              <option value="media" className="bg-stone-900">Média</option>
+                              <option value="alta" className="bg-stone-900">Alta</option>
+                              <option value="muito alta" className="bg-stone-900">Muito alta</option>
+                            </select>
+                          </div>
+
+                          <div className="sm:col-span-3">
+                            <label htmlFor="categoria" className="block text-sm/6 font-medium text-white">
+                              Categoria
+                            </label>
+                            <select
+                              id="categoria"
+                              name="categoria"
+                              value={ticketForm.id_categoria}
+                              onChange={(event) => handleTicketFieldChange("id_categoria", Number(event.target.value))}
+                              className="mt-2 block w-full rounded-md bg-white/5 px-3 py-2 text-base text-white outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                            >
+                              {categories.map((category) => (
+                                <option key={category.id} value={category.id} className="bg-stone-900">
+                                  {category.nome}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="col-span-full">
+                            <label htmlFor="descricao" className="block text-sm/6 font-medium text-white">
+                              Descrição
+                            </label>
+                            <p className="mt-2 text-sm/6 text-gray-400">Descreva o problema.</p>
+                            <div className="mt-2">
+                              <textarea
+                                id="descricao"
+                                name="descricao"
+                                rows={4}
+                                value={ticketForm.descricao}
+                                onChange={(event) => handleTicketFieldChange("descricao", event.target.value)}
+                                className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                              />
+                            </div>
+                          </div>
                         </div>
-                      </form>
+                      </div>
+
+                      <div className="rounded-xl border border-stone-700/70 bg-stone-800/45 px-4 py-3 text-sm text-stone-300">
+                        Solicitante atual: <span className="font-medium text-white">{currentUser.nome}</span>
+                      </div>
+
+                      {ticketError ? (
+                        <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+                          {ticketError}
+                        </div>
+                      ) : null}
+
+                      {ticketSuccess ? (
+                        <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+                          {ticketSuccess}
+                        </div>
+                      ) : null}
+
+                      <div className="pt-2">
+                        <AnimatedButton
+                          type="submit"
+                          disabled={isSubmittingTicket}
+                          label={isSubmittingTicket ? "Criando..." : "Criar chamado"}
+                        />
+                      </div>
+                    </form>
                   </CardContent>
                 </Card>
               ) : null}

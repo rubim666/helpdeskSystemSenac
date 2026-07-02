@@ -1,5 +1,10 @@
 import { apiClient } from '../api/client';
-import type { HelpdeskTicket, TicketPriority, TicketStatus } from '../types/helpdesk';
+import type {
+    CreateHelpdeskTicket,
+    HelpdeskTicket,
+    TicketPriority,
+    TicketStatus,
+} from '../types/helpdesk';
 
 interface RawChamado {
     id: number;
@@ -10,6 +15,19 @@ interface RawChamado {
     solicitante: string | null;
     responsavel: string | null;
     status: string | null;
+}
+
+interface RawCreatedChamado {
+    id: number;
+    uuid: string;
+    titulo: string;
+    descricao: string;
+    prioridade: string;
+    status: string;
+    patrimonio: string;
+    id_categoria: number;
+    id_usuario: number;
+    id_responsavel: number | null;
 }
 
 export async function fetchChamados(): Promise<HelpdeskTicket[]> {
@@ -25,4 +43,16 @@ export async function fetchChamados(): Promise<HelpdeskTicket[]> {
         responsavel: item.responsavel ?? undefined,
         status: (item.status ?? 'pendente') as TicketStatus,
     }));
+}
+
+export async function createChamado(payload: CreateHelpdeskTicket): Promise<{
+    message: string;
+    data: RawCreatedChamado;
+}> {
+    const response = await apiClient.post<RawCreatedChamado>('/api/chamados', payload);
+
+    return {
+        message: response.message ?? 'Chamado criado com sucesso',
+        data: response.data,
+    };
 }

@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../configs/Database.php';
+require_once __DIR__ . '/../Models/Called.php';
 
 class ChamadoRepository
 {
@@ -35,13 +36,35 @@ class ChamadoRepository
         }
     }
 
-    public function CriarTicket(Ticket $ticket):void{
+    public function CriarTicket(Chamado $ticket): array
+    {
         try {
-            $sql = 'INSERT INTO "CHAMADO" (uuid, titulo, descricao, prioridade, data_abertura, data_encerramento, patrimonio, id_categoria, id_usuario, id_responsavel, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            $sql = 'INSERT INTO "CHAMADO" (uuid, titulo, descricao, prioridade, data_abertura, data_encerramento, patrimonio, id_categoria, id_usuario, id_responsavel, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, uuid, titulo, descricao, prioridade, data_abertura, data_encerramento, patrimonio, id_categoria, id_usuario, id_responsavel, status';
             $stmt = Database::getConnection()->prepare($sql);
-            $stmt->execute([$ticket->getUuid(), $ticket->getTitulo(), $ticket->getDescricao(), $ticket->getPrioridade(), $ticket->getDataAbertura(), $ticket->getDataEncerramento(), $ticket->getPatrimonio(), $ticket->getIdCategoria(), $ticket->getIdUsuario(), $ticket->getIdResponsavel(), $ticket->getStatus()]);
+
+            $stmt->execute([
+                $ticket->getUuid(),
+                $ticket->getTitulo(),
+                $ticket->getDescricao(),
+                $ticket->getPrioridade(),
+                $ticket->getDataAbertura(),
+                $ticket->getDataEncerramento(),
+                $ticket->getPatrimonio(),
+                $ticket->getIdCategoria(),
+                $ticket->getIdUsuario(),
+                $ticket->getIdResponsavel(),
+                $ticket->getStatus(),
+            ]);
+
+            $created = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$created) {
+                throw new RuntimeException('Erro ao recuperar chamado criado');
+            }
+
+            return $created;
         } catch (PDOException $e) {
-            throw new RuntimeException("Erro ao criar chamado no banco",0 , $e);
+            throw new RuntimeException('Erro ao criar chamado no banco', 0, $e);
         }
     }
 }

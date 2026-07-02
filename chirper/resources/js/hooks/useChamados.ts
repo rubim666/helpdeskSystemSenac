@@ -7,6 +7,7 @@ interface UseChamadosResult {
     chamados: HelpdeskTicket[];
     isLoading: boolean;
     error: string | null;
+    refreshChamados: () => Promise<void>;
 }
 
 export function useChamados(): UseChamadosResult {
@@ -14,24 +15,32 @@ export function useChamados(): UseChamadosResult {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        let cancelled = false;
-
+    async function refreshChamados(): Promise<void> {
         setIsLoading(true);
         setError(null);
 
-        fetchChamados()
-            .then((data) => {
-                if (!cancelled) setChamados(data);
-            })
-            .catch((err: unknown) => {
-                if (!cancelled) {
-                    const message = err instanceof Error ? err.message : 'Erro ao carregar chamados';
-                    setError(message);
-                }
+        try {
+            const data = await fetchChamados();
+            setChamados(data);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Erro ao carregar chamados';
+            setError(message);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        let cancelled = false;
+
+        refreshChamados()
+            .catch(() => {
+                return;
             })
             .finally(() => {
-                if (!cancelled) setIsLoading(false);
+                if (cancelled) {
+                    return;
+                }
             });
 
         return () => {
@@ -39,5 +48,5 @@ export function useChamados(): UseChamadosResult {
         };
     }, []);
 
-    return { chamados, isLoading, error };
+    return { chamados, isLoading, error, refreshChamados };
 }

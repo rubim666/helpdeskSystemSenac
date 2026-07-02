@@ -41,6 +41,17 @@ export interface HelpdeskTicket {
     status: TicketStatus;
 }
 
+export interface CreateHelpdeskTicket {
+    titulo: string;
+    descricao: string;
+    patrimonio: string;
+    prioridade: TicketPriority;
+    status: TicketStatus;
+    id_categoria: number;
+    id_usuario: number;
+    id_responsavel?: number | null;
+}
+
 export interface DashboardMetric {
     key: string;
     title: string;
