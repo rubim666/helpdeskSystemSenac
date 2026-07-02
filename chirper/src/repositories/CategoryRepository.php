@@ -5,7 +5,7 @@ require_once __DIR__ . "/../models/Category.php";
 class CategoryRepository{
     public function EncontrarCategoriaPorId(int $id): ?Category{
         try{
-            $sql = 'SELECT * FROM "CAETGORIA" WHERE id = ?';
+            $sql = 'SELECT * FROM "CATEGORIA" WHERE id = ?';
             $stmt = Database::getConnection()->prepare($sql);
             $stmt->execute([$id]);
             $dados = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -14,143 +14,106 @@ class CategoryRepository{
             throw new RuntimeException("Erro ao buscar categoria no banco",0 , $e);
         }
     }
-    public function EncontrarTodosUsuarios():array{
+
+    public function EncontrarTodasCategorias():array{
         try{
-            $sql = 'SELECT * FROM "USUARIO" WHERE ativo = 1';
+            $sql = 'SELECT * FROM "CATEGORIA"';
             $stmt = Database::getConnection()->prepare($sql);
             $stmt->execute();
             $dados = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $usuarios = [];
-            foreach ($dados as $usuario) {
-            $usuarios[] = new User(    
-                $usuario['id'],
-                $usuario['uuid'],           
-                $usuario['nome'],
-                $usuario['CPF'],
-                $usuario['telefone'],
-                $usuario['email'],
-                $usuario['senha'],
-                $usuario['nivel'],
-                $usuario['ativo']
-            );
+            $categorias = [];
+            foreach ($dados as $categoria) {
+                $categorias[] = new Category(    
+                    $categoria['id'],       
+                    $categoria['nome'],
+                );
             }
-            return $usuarios;
-
-
+            return $categorias;
         }catch(PDOException $e){
-            throw new RuntimeException("Erro ao buscar usuário no banco",0 , $e);
+            throw new RuntimeException("Erro ao buscar categorias no banco",0 , $e);
         }
     }
-    public function criarUsuario(User $usuario):bool{
+
+    //Tratar os nomes na Service
+    public function EncontrarCategoriaPorNome(string $nome): ?Category{
         try{
-            $sql = 'INSERT INTO "USUARIO" (nome, "CPF" , telefone , email , senha , nivel , ativo) VALUES ( ? , ? , ?  , ? , ? , ? , ?)';
+            $sql = 'SELECT * FROM "CATEGORIA" WHERE nome = ?';
             $stmt = Database::getConnection()->prepare($sql);
-            return $stmt->execute([$usuario->getNome() ,
-            $usuario->getCpf() , $usuario->getTelefone() , $usuario->getEmail() , $usuario->getSenha() , $usuario->getNivel() , $usuario->getAtivo()]);
+            $stmt->execute([$nome]);
+            $dados = $stmt->fetch(PDO::FETCH_ASSOC);
+            return new Category($dados['id'], $dados['nome']);
+        }catch(PDOException $e){ 
+            throw new RuntimeException("Erro ao buscar categoria no banco",0 , $e);
+        }
+    }
+
+    public function criarCategoria(Category $categoria):bool{
+        try{
+            $sql = 'INSERT INTO "CATEGORIA" (nome) VALUES (?)';
+            $stmt = Database::getConnection()->prepare($sql);
+            return $stmt->execute([$categoria->getNome()]);
         }catch(PDOException $e){
-            throw new RuntimeException("Erro ao criar usuario ",0 , $e);
+            throw new RuntimeException("Erro ao criar categoria ",0 , $e);
         }
        
     }
-    public function deletarUsuario(int $id): bool{
+    public function deletarCategoria(int $id): bool{
         try {
-            $sql = 'UPDATE "USUARIO" SET ativo = FALSE WHERE id = ? AND ativo = 1';
+            $sql = 'UPDATE "USUARIO" *****';
             $stmt = Database::getConnection()->prepare($sql);
             return $stmt->execute([$id]);
         } catch (PDOException $e){
-            throw new RuntimeException("Erro ao tentar deletar usuario " , 0 , $e);
+            throw new RuntimeException("Erro ao tentar deletar categoria " , 0 , $e);
         }
     }
 
-    public function encontrarPorEmail(string $email): ?User{
-        try {
-            $sql = 'SELECT * FROM "USUARIO" WHERE email = ? AND ativo = 1';
-            $stmt = Database::getConnection()->prepare($sql);
-            $stmt->execute([$email]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-            return new User($user['id'] , $user['uuid'] , $user['nome'] , $user['CPF'] , 
-            $user['telefone'] , $user['email'] , $user['senha'] , $user['nivel'] , $user['ativo']);
-
-        } catch (PDOException $e) {
-            throw new RuntimeException("Erro ao buscar usuario " , 0 , $e);
-        }
-    }
-    public function atualizarUsuario(User $user): bool{
-        try {
-            $sql = 'UPDATE "USUARIO" SET  nome = ? , telefone = ? , email = ? , senha = ? WHERE id = ? AND ativo = 1';
-            $stmt = Database::getConnection()->prepare($sql);
-            $stmt->execute([$user->getNome() , $user->getTelefone() , $user->getEmail() , $user->getSenha() , $user->getId()]);
-            return $stmt->rowCount() > 0;
-
-        } catch (PDOException $e) {
-            throw new RuntimeException("Não foi possivel atualizar os dados do usuario " , 0 , $e);
-        }
-    }
-    public function alterarNivelUsuario(int $id ,string $nivel = 'usuario'): bool{
-        try {
-            $sql = 'UPDATE "USUARIO" SET nivel = ? WHERE id = ?';
-            $stmt = Database::getConnection()->prepare($sql);
-            $stmt->execute([$nivel , $id]);
-            return $stmt->rowCount() > 0;
-
-        } catch (PDOException $e) {
-            throw new RuntimeException("Erro ao atualizar usuario " , 0 , $e);
-        }
-    }
-    public function alterarSenha(string $senha , int $id):bool{
-        try {
-            
-            $sql = 'UPDATE "USUARIO" SET senha = ? WHERE id = ?';
-            $stmt = Database::getConnection()->prepare($sql);
-            $stmt->execute([$senha , $id]);
-            return $stmt->rowCount() > 0;
-        } catch (PDOException $e) {
-            throw new RuntimeException("Erro ao atualizar o usuario " , 0 ,$e);
-        }
-    }
-    public function ativarUsuario(int $id): bool{
-        try{
-            $sql = 'UPDATE "USUARIO" SET ativo = TRUE WHERE id = ?';
-            $stmt = Database::getConnection()->prepare($sql);
-            $stmt->execute([$id]);
-            return $stmt->rowCount() > 0;
-        } catch (PDOException $e) {
-            throw new RuntimeException("Erro ao ativar usuario " , 0 , $e);
-        }
-    }
 
 }
 /* 
 Testes da classe 
  */
 
-$categoriaRepo = new CategoryRepository(); // ajuste pro nome real da sua classe
-
+/*$categoriaRepo = new CategoryRepository(); 
 $categoria = $categoriaRepo->EncontrarCategoriaPorId(1);
-//$usuario = new CategoryRepository();
-// echo $usuario->ativarUsuario(2);
-//$user = $usuario->encontrarPorCpf('222.222.222-22');
-//$user->setEmail('carlinhos13@empresa.com');
-// $user->setNome('Carlos Campos');
-// echo $usuario->atualizarUsuario($user);
-//echo $user->getNome() . "<br>" . $user->getEmail() . "<br>" . $user->getTelefone();
+if ($categoria) {
+    echo "ID: " . $categoria->getId() . "<br>";
+    echo "Nome: " . $categoria->getNome() . "<br>";
+} else {
+    echo "Categoria não encontrada.";
+}*/
 
-// $user = new User('JoaozinhoGsss' , '111.222.444-21' , '(15)99222-8890' , 'joaozinho11112@email.com' , '123456');
-// echo $usuario->criarUsuario($user);
 
-// $user = new UserRepository();
-// $usuario = $user->EncontrarTodosUsuarios();
-// foreach($usuario as $user){
-//     echo $user->getEmail() . "<br>";
-// }
-// echo $usuario->getId();  
-// echo "<br>";
+/*$dao = new CategoryRepository(); 
+$categorias = $dao->EncontrarTodasCategorias();
 
-// echo $usuario->getNome();
-// echo "<br>";
+if (count($categorias) > 0) {
+    foreach ($categorias as $cat) {
+        echo "ID: " . $cat->getId() . " - Nome: " . $cat->getNome() . "<br>";
+    }
+} else {
+    echo "Nenhuma categoria encontrada.";
+}*/
 
-// echo $usuario->getEmail();
-// echo "<br>";
 
-// echo $usuario->getNivel();
+/*$dao = new CategoryRepository(); 
+
+$novaCategoria = new Category(null, "Categoria Teste dois");
+$sucesso = $dao->criarCategoria($novaCategoria);
+
+if ($sucesso) {
+    echo "Categoria criada com sucesso!";
+} else {
+    echo "Falha ao criar categoria.";
+}*/
+
+
+/*$dao = new CategoryRepository();
+$categoria = $dao->EncontrarCategoriaPorNome("Software");
+
+if ($categoria) {
+    echo "ID: " . $categoria->getId() . "<br>";
+    echo "Nome: " . $categoria->getNome() . "<br>";
+} else {
+    echo "Categoria não encontrada.";
+*/
 ?>
