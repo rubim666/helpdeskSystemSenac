@@ -1,5 +1,5 @@
 <?php
-
+die("ESTOU LENDO O DATABASE!");
 class Database
 {
     private static ?PDO $pdo = null;
