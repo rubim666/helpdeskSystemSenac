@@ -34,4 +34,14 @@ class ChamadoRepository
             throw new RuntimeException('Erro ao listar chamados', 0, $e);
         }
     }
+
+    public function CriarTicket(Ticket $ticket):void{
+        try {
+            $sql = 'INSERT INTO "CHAMADO" (uuid, titulo, descricao, prioridade, data_abertura, data_encerramento, patrimonio, id_categoria, id_usuario, id_responsavel, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            $stmt = Database::getConnection()->prepare($sql);
+            $stmt->execute([$ticket->getUuid(), $ticket->getTitulo(), $ticket->getDescricao(), $ticket->getPrioridade(), $ticket->getDataAbertura(), $ticket->getDataEncerramento(), $ticket->getPatrimonio(), $ticket->getIdCategoria(), $ticket->getIdUsuario(), $ticket->getIdResponsavel(), $ticket->getStatus()]);
+        } catch (PDOException $e) {
+            throw new RuntimeException("Erro ao criar chamado no banco",0 , $e);
+        }
+    }
 }
