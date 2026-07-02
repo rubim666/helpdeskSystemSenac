@@ -4,31 +4,31 @@ date_default_timezone_set('America/Sao_Paulo');
 
 class Ticket {
     protected int $id;
-    protected int $uuid;
+    protected ?string $uuid;
     protected string $titulo;
     protected string $descricao;
-    protected string $prioridade;
+    protected ?string $prioridade;
+    protected ?DateTime $dataAbertura;
+    protected ?DateTime $dataEncerramento;
     protected string $patrimonio;
-    protected string $status;
-    protected DateTime $dataAbertura;
-    protected DateTime $dataEncerramento;
-    protected int $id_categoria;
+    protected ?int $id_categoria;
     protected int $id_usuario;
-    protected int $id_responsavel;
+    protected ?int $id_responsavel;
+    protected string $status;
  
     public function __construct(
-        ?int $id = null,
-        ?int $uuid = null,
+        int $id = null,
+        ?string $uuid = null,
         string $titulo,
         string $descricao,
-        string $prioridade,
-        string $patrimonio,
-        string $status,
-        ?DateTime $dataAbertura,
+        ?string $prioridade = null,
+        ?DateTime $dataAbertura = null,
         ?DateTime $dataEncerramento = null,
+        string $patrimonio,
         ?int $id_categoria = null,
         int $id_usuario = 0,
-        ?int $id_responsavel = null
+        ?int $id_responsavel = null,
+        string $status
     )
     {
         if (empty($titulo)) {
@@ -44,13 +44,13 @@ class Ticket {
         $this->titulo = $titulo;
         $this->descricao = $descricao;
         $this->prioridade = $prioridade;
-        $this->patrimonio = $patrimonio;
-        $this->status = $status;
         $this->dataAbertura = $dataAbertura;
         $this->dataEncerramento = $dataEncerramento;
+        $this->patrimonio = $patrimonio;
         $this->id_categoria = $id_categoria;
         $this->id_usuario = $id_usuario;
         $this->id_responsavel = $id_responsavel;
+        $this->status = $status;
     }
 
     public function getId(): int {
@@ -73,22 +73,17 @@ class Ticket {
         return $this->prioridade;
     }
 
-    public function getPatrimonio(): string {
-        return $this->patrimonio;
-    }
-
-    public function getStatus(): string {
-        return $this->status;
-    }
-
-    public function getDataAbertura(): ?DateTime {
-        $date = new DateTime();
-        return $this->dataAbertura->$date->format('d-m-Y H:i:s');
+    public function getDataAbertura(): DateTime {
+        return $this->dataAbertura;
     }
 
     public function getDataEncerramento(): DateTime {
         $date = new DateTime();
         return $this->dataEncerramento->$date->format('d-m-Y H:i:s');
+    }
+
+    public function getPatrimonio(): string {
+        return $this->patrimonio;
     }
 
     public function getIdCategoria(): int {
@@ -101,6 +96,10 @@ class Ticket {
 
     public function getIdResponsavel(): ?int {
         return $this->id_responsavel;
+    }
+
+    public function getStatus(): string {
+        return $this->status;
     }
 
     public function getHistorico(): array {
@@ -119,13 +118,13 @@ class Ticket {
             'titulo' => $this->titulo,
             'descricao' => $this->descricao,
             'prioridade' => $this->prioridade,
-            'patrimonio' => $this->patrimonio,
-            'status' => $this->status,
             'dataAbertura' => $this->dataAbertura,
             'dataEncerramento' => $this->dataEncerramento,
+            'patrimonio' => $this->patrimonio,
             'id_categoria' => $this->id_categoria,
             'id_usuario' => $this->id_usuario,
             'id_responsavel' => $this->id_responsavel,
+            'status' => $this->status,
         ];
     }
 
@@ -176,22 +175,8 @@ class Ticket {
 }
  
 
-$teste = new Ticket(1, 1, "titulo", "descricao descricao", "baixa", "pat-01", "ativo", new Datetime(), new Datetime(), 1, 1, 1);
-echo "<prev>";
+$teste = new Ticket(1, "147", "titulo", "descricao descricao", "baixa", new DateTime(), new DateTime("2026-01-01"), "pat-01", 1, 1, 1, "ativo");
+echo "<pre>";
 echo $teste->toJson();
-echo "<br>";
-echo "<br>";
-echo $teste->getId();
-echo $teste->getUuid();
-echo $teste->getTitulo();
-echo $teste->getDescricao();
-echo $teste->getPrioridade();
-echo $teste->getPatrimonio();
-echo $teste->getStatus();
-echo $teste->getDataAbertura();
-// echo $teste->getDataEncerramento();
-echo $teste->getIdCategoria();
-echo $teste->getIdResponsavel();
-echo $teste->getIdUsuario();
-echo "</prev>";
+echo "</pre>";
 ?>
