@@ -9,19 +9,30 @@ class TicketRepository{
             $stmt = Database::getConnection()->prepare($sql);
             $stmt->execute([$id]);
             $dados = $stmt->fetch();
+            
             $dataAberturaObj = !empty($dados['data_abertura']) ? new DateTime($dados['data_abertura']) : null;
             $dataEncerramentoObj = !empty($dados['data_encerramento']) ? new DateTime($dados['data_encerramento']) : null;
-            return new Ticket($dados['id'],  $dados['titulo']
-             , $dados['descricao'] , $dados['prioridade'], $dados['patrimonio'],
-               $dados['status'], $dados['id_categoria'], $dados['id_usuario'], 
-               $dados['id_responsavel'], $dados['uuid'], $dataAberturaObj,
-               $dataEncerramentoObj);
+            
+            return new Ticket(
+                $dados['id'],  
+                $dados['uuid'],
+                $dados['titulo'],
+                $dados['descricao'],
+                $dados['prioridade'],
+                $dados['patrimonio'],
+                $dados['status'],
+                $dados['id_categoria'],
+                $dados['id_usuario'], 
+                $dados['id_responsavel'],
+                $dataAberturaObj,
+                $dataEncerramentoObj
+            );
         }catch(PDOException $e){
             throw new RuntimeException("Erro ao buscar chamado no banco",0 , $e);
         }
     }
 
-    public function EncontrarTodosTickets(): string { // <-- Tipo de retorno vira string
+    public function EncontrarTodosTickets(): string {
         try {
             $sql = 'SELECT * FROM "CHAMADO"';
             $stmt = Database::getConnection()->prepare($sql);
@@ -33,10 +44,18 @@ class TicketRepository{
                 $dataEncerramentoObj = !empty($linha['data_encerramento']) ? new DateTime($linha['data_encerramento']) : null;
                 
                 $ticket = new Ticket(
-                    $linha['id'],  $linha['titulo'], $linha['descricao'], 
-                    $linha['prioridade'], $linha['patrimonio'], $linha['status'], 
-                    $linha['id_categoria'], $linha['id_usuario'], $linha['id_responsavel'], 
-                    $linha['uuid'], $dataAberturaObj, $dataEncerramentoObj
+                    $linha['id'],
+                    $linha['uuid'],
+                    $linha['titulo'],
+                    $linha['descricao'], 
+                    $linha['prioridade'],
+                    $linha['patrimonio'],
+                    $linha['status'], 
+                    $linha['id_categoria'],
+                    $linha['id_usuario'],
+                    $linha['id_responsavel'], 
+                    $dataAberturaObj,
+                    $dataEncerramentoObj
                 );
                 $tickets[] = $ticket->getAll(); 
             }
@@ -48,11 +67,28 @@ class TicketRepository{
 
     public function CriarTicket(Ticket $ticket):void{
         try {
-            $sql = 'INSERT INTO "CHAMADO" (uuid, titulo, descricao, prioridade, data_abertura, data_encerramento, patrimonio, id_categoria, id_usuario, id_responsavel, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            $sql = 'INSERT INTO "CHAMADO" (uuid, titulo, descricao, prioridade, data_abertura, data_encerramento, patrimonio, id_categoria, id_usuario, id_responsavel, status) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
             $stmt = Database::getConnection()->prepare($sql);
-            $stmt->execute([$ticket->getUuid(), $ticket->getTitulo(), $ticket->getDescricao(), $ticket->getPrioridade(), $ticket->getDataAbertura(), $ticket->getDataEncerramento(), $ticket->getPatrimonio(), $ticket->getIdCategoria(), $ticket->getIdUsuario(), $ticket->getIdResponsavel(), $ticket->getStatus()]);
+            
+            $dataAberturaStr = $ticket->getDataAbertura() ? $ticket->getDataAbertura()->format('Y-m-d H:i:s') : null;
+            $dataEncerramentoStr = $ticket->getDataEncerramento() ? $ticket->getDataEncerramento()->format('Y-m-d H:i:s') : null;
+
+            $stmt->execute([
+                $ticket->getUuid(),
+                $ticket->getTitulo(),
+                $ticket->getDescricao(),
+                $ticket->getPrioridade(),
+                $dataAberturaStr,        
+                $dataEncerramentoStr,     
+                $ticket->getPatrimonio(),
+                $ticket->getIdCategoria(),
+                $ticket->getIdUsuario(),
+                $ticket->getIdResponsavel(),
+                $ticket->getStatus()
+            ]);
         } catch (PDOException $e) {
-            throw new RuntimeException("Erro ao criar chamado no banco",0 , $e);
+            // Alterado aqui: agora vai mostrar o erro exato que o Postgres respondeu!
+            throw new RuntimeException("Erro ao criar chamado no banco: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -77,41 +113,42 @@ class TicketRepository{
     }
 }
 
+
+
     // BUSCA DE UM CHAMADO POR ID
     // $ticket = new TicketRepository();
     // echo $ticket->EncontrarTicketPorId(317)->getTitulo();
 
+    // BUSCA DE TODOS OS CHAMADOS
+    // $repositorio = new TicketRepository();
+    // $json = $repositorio->EncontrarTodosTickets();
+    // header('Content-Type: application/json; charset=utf-8');
+    // echo $json;
 
-    $repositorio = new TicketRepository();
-    $json = $repositorio->EncontrarTodosTickets();
-    header('Content-Type: application/json; charset=utf-8');
-    echo $json;
+    // BLOCO DE TESTE: CRIAR UM NOVO CHAMADO
+    $repository = new TicketRepository();
 
+    $dataAbertura = new DateTime(); 
+    $novoTicket = new Ticket(                                                       
+        null,                                 
+        '550e8400-e29b-41d4-a716-446655440000',                       
+        "Computador não liga",               
+        "Aperto o botão e nada acontece.",    
+        null,                              
+        "PAT-98765",                       
+        "pendente",                            
+        1,                                    
+        1,                                    
+        2,                                   
+        $dataAbertura,                     
+        null                                 
+    );
 
-    // echo "echo de string pra ver se ta aparecendo";
-// $user = $usuario->encontrarPorCpf('222.222.222-22');
-// $user->setEmail('carlinhos13@empresa.com');
-// $user->setNome('Carlos Campos');
-// echo $usuario->atualizarUsuario($user);
-// echo $user->getNome() . "<br>" . $user->getEmail() . "<br>" . $user->getTelefone();
- 
-// $user = new User('JoaozinhoGsss' , '111.222.444-21' , '(15)99222-8890' , 'joaozinho11112@email.com' , '123456');
-// echo $usuario->criarUsuario($user);
- 
-// $user = new UserRepository();
-// $usuario = $user->EncontrarTodosUsuarios();
-// foreach($usuario as $user){
-//     echo $user->getEmail() . "<br>";
-// }
-// echo $usuario->getId();  
-// echo "<br>";
- 
-// echo $usuario->getNome();
-// echo "<br>";
- 
-// echo $usuario->getEmail();
-// echo "<br>";
- 
-// echo $usuario->getNivel();
+    try {
+        $repository->CriarTicket($novoTicket);
+        echo "\nDeu certo! O ticket foi criado no DB.\n";
+    } catch (Exception $e) {
+        echo "\nDeu ruim na hora de salvar no banco: " . $e->getMessage() . "\n";
+    }
 
 ?>
