@@ -6,8 +6,10 @@
         "build": "vite build",
         "build:ssr": "vite build && vite build --ssr",
         "dev": "vite",
-        "dev:php": "php -S localhost:8000 -t public",
+        "dev:host": "concurrently -n PHP,Vite -c green,cyan \"npm run dev:php\" \"vite --host\"",
+        "dev:php": "php -S 0.0.0.0:8000 -t public",
         "dev:all": "concurrently -n PHP,Vite -c green,cyan \"npm run dev:php\" \"npm run dev\"",
+        "android": "npm run build && npx cap sync android && npx cap run android --target emulator-5554",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
         "lint": "eslint . --fix",
@@ -15,6 +17,7 @@
         "types:check": "tsc --noEmit"
     },
     "devDependencies": {
+        "@capacitor/cli": "^8.5.1",
         "@eslint/js": "^9.19.0",
         "@laravel/vite-plugin-wayfinder": "^0.1.3",
         "@stylistic/eslint-plugin": "^5.10.0",
@@ -32,6 +35,9 @@
         "typescript-eslint": "^8.23.0"
     },
     "dependencies": {
+        "@capacitor/android": "^8.5.1",
+        "@capacitor/core": "^8.5.1",
+        "@capacitor/preferences": "^8.0.1",
         "@inertiajs/react": "^3.0.0",
         "@inertiajs/vite": "^3.0.0",
         "@laravel/passkeys": "^0.2.0",

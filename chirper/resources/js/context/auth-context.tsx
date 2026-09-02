@@ -1,3 +1,4 @@
+import { Preferences } from '@capacitor/preferences';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { ApiError } from '../api/client';
@@ -23,54 +24,56 @@ const AUTH_STORAGE_KEY = 'helpdesk.auth.user';
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-function loadStoredUser(): HelpdeskUser | null {
+function isStoredUser(value: unknown): value is HelpdeskUser {
+    const parsed = value as Partial<HelpdeskUser> | null;
+
+    return (
+        !!parsed &&
+        typeof parsed.id === 'number' &&
+        typeof parsed.nome === 'string' &&
+        typeof parsed.email === 'string' &&
+        typeof parsed.nivel === 'string' &&
+        typeof parsed.ativo === 'boolean' &&
+        typeof parsed.telefone === 'string'
+    );
+}
+
+async function loadStoredUser(): Promise<HelpdeskUser | null> {
     try {
-        const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-        if (!raw) {
+        const { value } = await Preferences.get({ key: AUTH_STORAGE_KEY });
+        if (!value) {
             return null;
         }
 
-        const parsed = JSON.parse(raw) as Partial<HelpdeskUser>;
-
-        if (
-            typeof parsed.id !== 'number' ||
-            typeof parsed.nome !== 'string' ||
-            typeof parsed.email !== 'string' ||
-            typeof parsed.nivel !== 'string' ||
-            typeof parsed.ativo !== 'boolean' ||
-            typeof parsed.telefone !== 'string'
-        ) {
-            return null;
-        }
-
-        return parsed as HelpdeskUser;
+        const parsed = JSON.parse(value) as unknown;
+        return isStoredUser(parsed) ? parsed : null;
     } catch {
         return null;
     }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<HelpdeskUser | null>(() => loadStoredUser());
+    const [user, setUser] = useState<HelpdeskUser | null>(null);
     const [isInitializing, setIsInitializing] = useState(true);
 
-    const persistUser = useCallback((nextUser: HelpdeskUser | null, shouldRemember = true) => {
+    const persistUser = useCallback(async (nextUser: HelpdeskUser | null, shouldRemember = true) => {
         setUser(nextUser);
 
         if (!nextUser || !shouldRemember) {
-            localStorage.removeItem(AUTH_STORAGE_KEY);
+            await Preferences.remove({ key: AUTH_STORAGE_KEY });
             return;
         }
 
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextUser));
+        await Preferences.set({ key: AUTH_STORAGE_KEY, value: JSON.stringify(nextUser) });
     }, []);
 
     const refreshUser = useCallback(async () => {
         try {
             const me = await fetchAuthenticatedUser();
-            persistUser(me, true);
+            await persistUser(me, true);
         } catch (error) {
             if (error instanceof ApiError && error.status === 401) {
-                persistUser(null, false);
+                await persistUser(null, false);
                 return;
             }
 
@@ -79,19 +82,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, [persistUser]);
 
     useEffect(() => {
-        refreshUser()
-            .catch(() => {
-                persistUser(null, false);
-            })
-            .finally(() => {
-                setIsInitializing(false);
-            });
+        let cancelled = false;
+
+        async function bootstrap() {
+            const cachedUser = await loadStoredUser();
+            if (!cancelled && cachedUser) {
+                setUser(cachedUser);
+            }
+
+            try {
+                await refreshUser();
+            } catch {
+                if (!cancelled) {
+                    await persistUser(null, false);
+                }
+            } finally {
+                if (!cancelled) {
+                    setIsInitializing(false);
+                }
+            }
+        }
+
+        void bootstrap();
+
+        return () => {
+            cancelled = true;
+        };
     }, [persistUser, refreshUser]);
 
     const login = useCallback(
         async ({ email, password, remember }: LoginCredentials) => {
             const authUser = await loginRequest({ email, senha: password });
-            persistUser(authUser, remember);
+            await persistUser(authUser, remember);
         },
         [persistUser],
     );
@@ -100,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             await logoutRequest();
         } finally {
-            persistUser(null, false);
+            await persistUser(null, false);
         }
     }, [persistUser]);
 
