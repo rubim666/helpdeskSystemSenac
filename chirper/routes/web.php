@@ -164,7 +164,7 @@ $router->get('/api/usuarios', function (): void {
  
         $service = new UserServices();
         $usuarios = $service->encontrarTodosUsuarios(new User(
-            $currentUser['id'],
+            $currentUser['id'], 
             null,
             $currentUser['nome'],
             '111.444.777-35',

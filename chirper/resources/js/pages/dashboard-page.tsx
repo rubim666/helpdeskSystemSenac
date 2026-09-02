@@ -443,7 +443,7 @@ const handleUpdateStatus = async (ticketId: number, novoStatus: string) => {
 
     if (authUser.nivel === "analista") {
   return chamados;
-}
+  }
 
     return chamados;
   }, [chamados, authUser.nivel, authUser.nome]);
