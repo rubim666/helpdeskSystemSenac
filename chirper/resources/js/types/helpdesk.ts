@@ -11,6 +11,7 @@ export interface HelpdeskUser {
     nivel: UserRole;
     ativo: boolean;
     telefone: string;
+    precisaTrocarSenha: boolean;
 }
 
 export interface CreateHelpdeskUser {

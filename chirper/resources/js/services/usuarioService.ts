@@ -17,6 +17,7 @@ interface RawUsuario {
     nivel: UserRole;
     ativo: boolean;
     telefone?: string;
+    precisaTrocarSenha: boolean;
 }
 
 export async function fetchUsuarios(): Promise<HelpdeskUser[]> {
@@ -29,6 +30,7 @@ export async function fetchUsuarios(): Promise<HelpdeskUser[]> {
         nivel: usuario.nivel,
         ativo: usuario.ativo,
         telefone: usuario.telefone ?? '',
+        precisaTrocarSenha: usuario.precisaTrocarSenha ?? '',
     }));
 }
 
@@ -38,4 +40,8 @@ export async function alterarNivelUsuario(id: number, nivel: UserRole): Promise<
 
 export async function resetarSenhaUsuario(id: number): Promise<void> {
     await apiClient.post('/api/usuarios/resetar-senha', { id });
+}
+
+export async function alterarMinhaSenha(novaSenha: string): Promise<void> {
+    await apiClient.post('/api/senha/trocar', { novaSenha });
 }

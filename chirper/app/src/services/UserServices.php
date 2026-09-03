@@ -130,6 +130,19 @@ class UserServices{
 
     return $userRepository->alterarSenha($novaSenha, $id);
     }
+
+    public function trocarSenhaPropria(User $usuarioLogado, string $novaSenha): bool
+    {
+        $userRepository = new UserRepository();
+
+        if (!PasswordUtils::validar($novaSenha)) {
+            throw new InvalidArgumentException("Senha inválida. Use 8+ caracteres com maiúscula, minúscula, número e símbolo.");
+        }
+
+        $hash = PasswordUtils::hash($novaSenha);
+
+        return $userRepository->alterarSenha($hash, $usuarioLogado->getId());
+    }
    
     public function atualizarTelefone(User $usuarioLogado, string $telefone):bool{
         $userRepository = new UserRepository();

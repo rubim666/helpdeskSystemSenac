@@ -7,10 +7,11 @@ import { HashRouter, Navigate, Route, Routes, useNavigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/auth-context';
 import { ThemeProvider } from './context/theme-context';
 import { DashboardPage } from '@/pages/dashboard-page';
+import { ForcedPasswordPage } from '@/pages/forced-password-page';
 import { LoginPage } from '@/pages/login-page';
 
 function AppShell() {
-    const { isAuthenticated, isInitializing, login, logout } = useAuth();
+    const { isAuthenticated, isInitializing, user, login, logout, refreshUser } = useAuth();
     const navigate = useNavigate();
 
     async function handleLogin(credentials: { email: string; password: string; remember: boolean }) {
@@ -29,6 +30,10 @@ function AppShell() {
                 Carregando sessão...
             </main>
         );
+    }
+
+    if (isAuthenticated && user?.precisaTrocarSenha) {
+        return <ForcedPasswordPage onPasswordChanged={refreshUser} onLogout={handleLogout} />;
     }
 
     return (
@@ -53,11 +58,11 @@ function AppShell() {
 function App() {
     return (
         <HashRouter>
-            <ThemeProvider>
-                <AuthProvider>
+            <AuthProvider>
+                <ThemeProvider>
                     <AppShell />
-                </AuthProvider>
-            </ThemeProvider>
+                </ThemeProvider>
+            </AuthProvider>
         </HashRouter>
     );
 }

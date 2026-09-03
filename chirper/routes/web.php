@@ -37,29 +37,30 @@ if (!function_exists('apiReadJsonBody')) {
 }
  
 if (!function_exists('apiCurrentAuthUser')) {
-    function apiCurrentAuthUser(): ?array
-    {
-        $sessionUser = $_SESSION['auth_user'] ?? null;
-        if (!is_array($sessionUser)) {
-            return null;
-        }
- 
-        $requiredFields = ['id', 'nome', 'email', 'nivel', 'ativo'];
-        foreach ($requiredFields as $field) {
-            if (!array_key_exists($field, $sessionUser)) {
-                return null;
-            }
-        }
- 
-        return [
-            'id' => (int) $sessionUser['id'],
-            'nome' => (string) $sessionUser['nome'],
-            'email' => (string) $sessionUser['email'],
-            'nivel' => (string) $sessionUser['nivel'],
-            'ativo' => (bool) $sessionUser['ativo'],
-            'telefone' => (string) ($sessionUser['telefone'] ?? ''),
-        ];
-    }
+	function apiCurrentAuthUser(): ?array
+	{
+		$sessionUser = $_SESSION['auth_user'] ?? null;
+		if (!is_array($sessionUser)) {
+			return null;
+		}
+
+		$requiredFields = ['id', 'nome', 'email', 'nivel', 'ativo'];
+		foreach ($requiredFields as $field) {
+			if (!array_key_exists($field, $sessionUser)) {
+				return null;
+			}
+		}
+
+		return [
+			'id' => (int) $sessionUser['id'],
+			'nome' => (string) $sessionUser['nome'],
+			'email' => (string) $sessionUser['email'],
+			'nivel' => (string) $sessionUser['nivel'],
+			'ativo' => (bool) $sessionUser['ativo'],
+			'telefone' => (string) ($sessionUser['telefone'] ?? ''),
+			'precisaTrocarSenha' => (bool) ($sessionUser['precisaTrocarSenha'] ?? false),
+		];
+	}
 }
  
 if (!function_exists('apiRequireAuthUser')) {
@@ -616,50 +617,100 @@ $router->get('/api/categorias', function (): void {
 	}
 });
 $router->post('/api/login', function (): void {
-    try {
-        $payload = apiReadJsonBody();
-        $email = isset($payload['email']) ? trim((string) $payload['email']) : '';
-        $senha = isset($payload['senha']) ? (string) $payload['senha'] : '';
- 
-        if ($email === '' || $senha === '') {
-            apiJsonResponse([
-                'success' => false,
-                'message' => 'Email e senha são obrigatórios.',
-            ], 400);
-        }
- 
-        $repository = new UserRepository();
-        $user = $repository->encontrarPorEmail($email);
- 
-        if ($user === null || !$user->getAtivo() || !PasswordUtils::verificar($senha, $user->getSenha())) {
-            apiJsonResponse([
-                'success' => false,
-                'message' => 'Credenciais inválidas.',
-            ], 401);
-        }
- 
-        session_regenerate_id(true);
- 
-        $_SESSION['auth_user'] = [
-            'id' => $user->getId(),
-            'nome' => $user->getNome(),
-            'email' => $user->getEmail(),
-            'nivel' => $user->getNivel(),
-            'ativo' => $user->getAtivo(),
-            'telefone' => $user->getTelefone(),
-        ];
- 
-        apiJsonResponse([
-            'success' => true,
-            'data' => apiCurrentAuthUser(),
-        ]);
-    } catch (Throwable $e) {
-        apiJsonResponse([
-            'success' => false,
-            // 'message' => 'Erro ao autenticar usuário.',
-            'message' => $e->getMessage(),
-        ], 500);
-    }
+	try {
+		$payload = apiReadJsonBody();
+		$email = isset($payload['email']) ? trim((string) $payload['email']) : '';
+		$senha = isset($payload['senha']) ? (string) $payload['senha'] : '';
+
+		if ($email === '' || $senha === '') {
+			apiJsonResponse([
+				'success' => false,
+				'message' => 'Email e senha são obrigatórios.',
+			], 400);
+		}
+
+		$repository = new UserRepository();
+		$user = $repository->encontrarPorEmail($email);
+
+		if ($user === null || !$user->getAtivo() || !PasswordUtils::verificar($senha, $user->getSenha())) {
+			apiJsonResponse([
+				'success' => false,
+				'message' => 'Credenciais inválidas.',
+			], 401);
+		}
+
+		session_regenerate_id(true);
+
+		$precisaTrocarSenha = hash_equals('Help123@', $senha);
+
+		$_SESSION['auth_user'] = [
+			'id' => $user->getId(),
+			'nome' => $user->getNome(),
+			'email' => $user->getEmail(),
+			'nivel' => $user->getNivel(),
+			'ativo' => $user->getAtivo(),
+			'telefone' => $user->getTelefone(),
+			'precisaTrocarSenha' => $precisaTrocarSenha,
+		];
+
+		apiJsonResponse([
+			'success' => true,
+			'data' => apiCurrentAuthUser(),
+		]);
+	} catch (Throwable $e) {
+		apiJsonResponse([
+			'success' => false,
+			'message' => $e->getMessage(),
+		], 500);
+	}
+});
+
+$router->post('/api/senha/trocar', function (): void {
+	try {
+		$currentUser = apiRequireAuthUser();
+
+		$payload = apiReadJsonBody();
+		$novaSenha = isset($payload['novaSenha']) ? (string) $payload['novaSenha'] : '';
+
+		if ($novaSenha === '') {
+			apiJsonResponse([
+				'success' => false,
+				'message' => 'Nova senha é obrigatória.',
+			], 400);
+		}
+
+		$usuarioLogado = new User(
+			$currentUser['id'],
+			'',
+			$currentUser['nome'],
+			'111.444.777-35',
+			$currentUser['telefone'] !== '' ? $currentUser['telefone'] : '(11) 99999-9999',
+			$currentUser['email'],
+			'nao_utilizado',
+			$currentUser['nivel'],
+			(bool) $currentUser['ativo']
+		);
+
+		$service = new UserServices();
+		$service->trocarSenhaPropria($usuarioLogado, $novaSenha);
+
+		$_SESSION['auth_user']['precisaTrocarSenha'] = false;
+
+		apiJsonResponse([
+			'success' => true,
+			'data' => apiCurrentAuthUser(),
+		]);
+	} catch (InvalidArgumentException $e) {
+		apiJsonResponse([
+			'success' => false,
+			'message' => $e->getMessage(),
+		], 400);
+	} catch (Throwable $e) {
+		apiJsonResponse([
+			'success' => false,
+			'message' => 'Erro ao trocar senha.',
+		], 500);
+	}
 });
  
 $router->get('/api/me', function (): void {
