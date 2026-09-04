@@ -133,11 +133,11 @@ if (!function_exists('apiSerializeUsuario')) {
         ];
     }
 }
- 
 $router->get('/api/chamados', function (): void {
     $controller = new TicketController();
     $controller->listarTicket();
 });
+
 
 $router->get('/api/usuarios', function (): void {
     try {
@@ -152,7 +152,7 @@ $router->get('/api/usuarios', function (): void {
  
         $service = new UserServices();
         $usuarios = $service->encontrarTodosUsuarios(new User(
-            $currentUser['id'],
+            $currentUser['id'], 
             null,
             $currentUser['nome'],
             '111.444.777-35',
@@ -171,6 +171,10 @@ $router->get('/api/usuarios', function (): void {
         if ($somenteTecnicos || $nivelFiltro !== '') {
             $filtroNormalizado = $somenteTecnicos ? 'tecnico' : strtolower($nivelFiltro);
             $lista = array_values(array_filter($lista, static fn (array $usuario) => ($usuario['nivel'] ?? '') === $filtroNormalizado));
+        }
+
+        if (($currentUser['nivel'] ?? '') === 'analista') {
+            $lista = array_values(array_filter($lista, static fn (array $usuario) => ($usuario['nivel'] ?? '') !== 'adm'));
         }
  
         apiJsonResponse([
@@ -226,9 +230,7 @@ $router->get('/api/tecnicos', function (): void {
     }
 });
 $router->get('/api/historico', function (): void {
-
     try {
-
         apiRequireAuthUser();
 
         $idChamado = isset($_GET['id_chamado'])
@@ -243,23 +245,19 @@ $router->get('/api/historico', function (): void {
         }
 
         $controller = new HistoryController();
-
         $controller->getByTicketId($idChamado);
 
     } catch (Throwable $e) {
-
         apiJsonResponse([
             'success' => false,
             'message' => $e->getMessage()
         ], 500);
     }
 });
+
 $router->post('/api/historico', function (): void {
-
     try {
-
         $currentUser = apiRequireAuthUser();
-
         $payload = apiReadJsonBody();
 
         $descricao = isset($payload['descricao'])
@@ -271,7 +269,6 @@ $router->post('/api/historico', function (): void {
             : 0;
 
         if ($descricao === '') {
-
             apiJsonResponse([
                 'success' => false,
                 'message' => 'O comentário é obrigatório.'
@@ -279,25 +276,31 @@ $router->post('/api/historico', function (): void {
         }
 
         if ($idChamado <= 0) {
-
             apiJsonResponse([
                 'success' => false,
                 'message' => 'Chamado inválido.'
             ], 400);
         }
 
+        $ticketRepository = new TicketRepository();
+        $ticket = $ticketRepository->encontrarTicketPorId($idChamado);
+
+        if ($ticket && $ticket->getStatus() === 'concluido') {
+            apiJsonResponse([
+                'success' => false,
+                'message' => 'Chamado concluído não aceita novos comentários.'
+            ], 409);
+        }
+
         $controller = new HistoryController();
 
         $controller->create([
             'descricao' => $descricao,
-
             'id_chamado' => $idChamado,
-
             'id_usuario' => (int) $currentUser['id']
         ]);
 
     } catch (Throwable $e) {
-
         apiJsonResponse([
             'success' => false,
             'message' => $e->getMessage()

@@ -208,42 +208,52 @@ export function AnimatedTable({
                                             </Badge>
                                         </td>
 
-                                        <td className="px-3 py-3" onClick={(event) => event.stopPropagation()}>
-                                            {onUpdateStatus ? (
-                                                <>
-                                                    <select
-                                                        value={statusLocal[row.id] || row.status}
-                                                        disabled={
-                                                            isUpdatingStatusId === row.id ||
-                                                            (userRole !== 'tecnico')
-                                                        }
-                                                        onChange={(event) => handleStatusChange(row.id, event)}
-                                                        className="w-full min-w-36 rounded-xl border border-stone-700 bg-stone-950 px-3 py-2 text-stone-100 capitalize disabled:cursor-not-allowed disabled:opacity-60"
-                                                    >
-                                                        <option value="pendente">Pendente</option>
+                                        <td
+                                        className="px-3 py-3"
+                                        onClick={(event) => event.stopPropagation()}
+                                    >
+                                        {onUpdateStatus ? (
+                                            <>
+                                                <select
+                                                    value={statusLocal[row.id] || row.status}
+                                                    disabled={
+                                                        isUpdatingStatusId === row.id ||
+                                                        userRole !== 'tecnico'
+                                                    }
+                                                    onChange={(event) =>
+                                                        handleStatusChange(row.id, event)
+                                                    }
+                                                    className="w-full min-w-36 rounded-xl border border-stone-700 bg-stone-950 px-3 py-2 text-stone-100 capitalize disabled:cursor-not-allowed disabled:opacity-60"
+                                                >
+                                                    <option value="pendente">Pendente</option>
+                                                    <option value="concluido">Concluído</option>
+                                                    <option value="cancelado">Cancelado</option>
+                                                    <option value="não resolvido">
+                                                        Não Resolvido
+                                                    </option>
+                                                </select>
 
-                                                        {(userRole === 'tecnico' || userRole === 'analista') && (
-                                                            <>
-                                                                <option value="concluido">Concluído</option>
-                                                                <option value="cancelado">Cancelado</option>
-                                                                <option value="não resolvido">Não Resolvido</option>
-                                                            </>
-                                                        )}
-                                                    </select>
-                                                    {isUpdatingStatusId === row.id ? (
-                                                        <p className="mt-1 text-xs text-amber-200">Atualizando...</p>
-                                                    ) : null}
-                                                </>
-                                            ) : (
-                                                <span className="text-stone-300 capitalize">{row.status}</span>
-                                            )}
-                                        </td>
-
-                                        <td className="px-3 py-3 text-stone-300">
-                                            {row.responsavel ?? 'A definir'}
-                                        </td>
+                                                {isUpdatingStatusId === row.id ? (
+                                                    <p className="mt-1 text-xs text-amber-200">
+                                                        Atualizando...
+                                                    </p>
+                                                ) : null}
+                                            </>
+                                        ) : (
+                                            <span className="text-stone-300 capitalize">
+                                                {row.status === 'concluido'
+                                                    ? 'Concluído'
+                                                    : row.status === 'não resolvido'
+                                                        ? 'Não Resolvido'
+                                                        : row.status === 'cancelado'
+                                                            ? 'Cancelado'
+                                                            : 'Pendente'}
+                                            </span>
+                                        )}
+                                    </td>
 
                                         {showAssignmentColumn ? (
+                                            
                                             <td className="px-3 py-3" onClick={(event) => event.stopPropagation()}>
                                                 <select
                                                     value={row.tecnicoId ?? ''}

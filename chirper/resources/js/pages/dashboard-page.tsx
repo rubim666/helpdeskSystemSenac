@@ -164,10 +164,18 @@ function ChamadoDetalhes({ chamado, onVoltar, currentUser }: ChamadoDetalhesProp
   const ehSolicitante =
     currentUser.nivel === "usuario" &&
     chamado.solicitante.trim().toLocaleLowerCase("pt-BR") === nomeNormalizado;
-  const podeComentar = ehTecnicoDoChamado || ehSolicitante;
+  const chamadoConcluido = chamado.status === "concluido";
+
+  const podeComentar =
+    !chamadoConcluido &&
+    (ehTecnicoDoChamado || ehSolicitante);
 
   async function handleComentarioSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (chamado.status === "concluido") {
+      setComentarioError("Este chamado foi concluído e não aceita mais comentários.");
+      return;
+    }
     if (comentario.trim() === "") return;
 
     setIsSubmittingComentario(true);
@@ -225,36 +233,64 @@ function ChamadoDetalhes({ chamado, onVoltar, currentUser }: ChamadoDetalhesProp
                     .slice()
                     .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
                     .map((item, index) => (
-                      <div key={`${item.data}-${index}`} className="border-l-2 border-amber-500 pl-4">
-                        <p className="text-sm font-medium text-white">{item.descricao}</p>
-                        <p className="mt-1 text-xs text-stone-400">
-                          {new Date(item.data).toLocaleString("pt-BR")}
-                        </p>
+                      <div
+                        key={`${item.data}-${index}`}
+                        className="border-l-2 border-amber-500 pl-4"
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="mt-0.5 min-w-[68px] rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-center text-xs text-amber-300">
+                            {item.id_usuario === currentUser.id
+                              ? currentUser.nivel === "tecnico"
+                                ? "Técnico"
+                                : "Usuário"
+                              : currentUser.nivel === "tecnico"
+                                ? "Usuário"
+                                : "Técnico"}
+                          </span>
+
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-white">
+                              {item.descricao}
+                            </p>
+
+                            <p className="mt-1 text-xs text-stone-400">
+                              {new Date(item.data).toLocaleString("pt-BR")}
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     ))
-                )}
-              </div>
-
-              {podeComentar ? (
-                <form className="mt-3 space-y-2" onSubmit={handleComentarioSubmit}>
-                  {comentarioError ? (
-                    <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-100">
-                      {comentarioError}
+                    )}
                     </div>
-                  ) : null}
-                  <textarea
-                    value={comentario}
-                    onChange={(event) => setComentario(event.target.value)}
-                    rows={3}
-                    className="w-full rounded-xl border border-stone-700 bg-stone-950 px-3 py-2 text-stone-100 placeholder:text-stone-500"
-                    placeholder="Como está indo o chamado?"
-                    required
-                  />
-                  <Button type="submit" disabled={isSubmittingComentario}>
-                    {isSubmittingComentario ? "Enviando..." : "Adicionar comentário"}
-                  </Button>
-                </form>
-              ) : null}
+
+      {chamadoConcluido ? (
+              <div className="mt-3 rounded-xl border border-stone-700 bg-stone-900/60 px-4 py-3 text-sm text-stone-400">
+                Este chamado foi concluído. Não é mais possível enviar comentários.
+              </div>
+            ) : podeComentar ? (
+              <form className="mt-3 space-y-2" onSubmit={handleComentarioSubmit}>
+                {comentarioError ? (
+                  <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-100">
+                    {comentarioError}
+                  </div>
+                ) : null}
+
+                <textarea
+                  value={comentario}
+                  onChange={(event) => setComentario(event.target.value)}
+                  rows={3}
+                  className="w-full rounded-xl border border-stone-700 bg-stone-950 px-3 py-2 text-stone-100 placeholder:text-stone-500"
+                  placeholder="Como está indo o chamado?"
+                  required
+                />
+
+                <Button type="submit" disabled={isSubmittingComentario}>
+                  {isSubmittingComentario
+                    ? "Enviando..."
+                    : "Adicionar comentário"}
+                </Button>
+              </form>
+            ) : null}
             </div>
           </CardContent>
         </Card>

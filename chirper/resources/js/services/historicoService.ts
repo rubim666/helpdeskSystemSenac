@@ -2,9 +2,11 @@ export interface HistoryItem {
     descricao: string;
     data: string;
     id_chamado: number;
-    id_usuario: number; // <- era id_usuario_tecnico, mas o backend retorna id_usuario
-}
+    id_usuario: number;
 
+    autor_nome: string;
+    autor_nivel: "usuario" | "tecnico" | "analista" | "adm";
+}
 interface HistoryResponse {
     success: boolean;
     data: HistoryItem[];
