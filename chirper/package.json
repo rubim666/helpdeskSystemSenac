@@ -7,6 +7,7 @@
         "build:ssr": "vite build && vite build --ssr",
         "dev": "vite",
         "dev:php": "php -S localhost:8000 -t public",
+        "dev:php:lan": "php -S 0.0.0.0:8000 -t public",
         "dev:all": "concurrently -n PHP,Vite -c green,cyan \"npm run dev:php\" \"npm run dev\"",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
