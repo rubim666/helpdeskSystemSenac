@@ -135,6 +135,15 @@ class TicketController extends Controller {
         }
     }
 
+    public function marcarNaoResolvido(int $id): void {
+        try {
+            $this->services->ticketNaoResolvido($id);
+            $this->response(["success" => true, "message" => "Ticket marcado como não resolvido com sucesso."]);
+        } catch (\Throwable $e) {
+            $this->response(["success" => false, "message" => 'Não foi possivel marcar como não resolvido: ' . $e->getMessage()], 400);
+        }
+    }
+
     // =========================================================================
     // FILTROS DE BUSCA
     // =========================================================================
@@ -631,8 +640,8 @@ $controller = new TicketController();
 // =========================================================================
 // echo "<h3>22. Teste: Calcular Taxa de Resolução por Período</h3>";
 // try {
-//     $dataInicio = '2026-07-01';
-//     $dataFim = '2026-09-30';
+//     $dataInicio = '2026-08-17';
+//     $dataFim = '2026-08-21';
 //     $controller->taxaResolucaoPeriodo($dataInicio, $dataFim);
 // } catch (\Exception $e) {
 //     echo "<b>Erro:</b> " . $e->getMessage() . "<br>";
@@ -647,6 +656,17 @@ $controller = new TicketController();
 //     $dataFim = '2026-12-31'; 
     
 //     $controller->dashboardPorPeriodo($dataInicio, $dataFim);
+// } catch (\Exception $e) {
+//     echo "<b>Erro:</b> " . $e->getMessage() . "<br>";
+// }
+
+// =========================================================================
+// 29. TESTE: MARCAR TICKET COMO NÃO RESOLVIDO
+// =========================================================================
+// echo "<h3>29. Teste: Marcar Ticket como Não Resolvido</h3>";
+// try {
+//     $idTicket = 4; 
+//     $controller->marcarNaoResolvido($idTicket);
 // } catch (\Exception $e) {
 //     echo "<b>Erro:</b> " . $e->getMessage() . "<br>";
 // }
