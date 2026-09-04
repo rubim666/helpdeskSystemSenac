@@ -10,7 +10,6 @@ require_once __DIR__ . '/../app/src/services/UserServices.php';
 require_once __DIR__ . '/../app/src/models/User.php';
 require_once __DIR__ . '/../app/src/utils/CpfUtils.php';
 require_once __DIR__ . '/../app/src/utils/PhoneUtils.php';
-require_once __DIR__ . '/../app/Http/Support/ChamadoActions.php';
 require_once __DIR__ . '/../app/src/controllers/HistoryController.php';
  
 if (!function_exists('apiJsonResponse')) {
@@ -136,21 +135,10 @@ if (!function_exists('apiSerializeUsuario')) {
 }
  
 $router->get('/api/chamados', function (): void {
-    try {
-        $actions = new ChamadoActions();
-        $chamados = $actions->listarComTecnicoId();
- 
-        apiJsonResponse([
-            'success' => true,
-            'data' => $chamados,
-        ]);
-    } catch (Throwable $e) {
-        apiJsonResponse([
-            'success' => false,
-            'message' => 'Erro ao buscar chamados.',
-        ], 500);
-    }
+    $controller = new TicketController();
+    $controller->listarTicket();
 });
+
 $router->get('/api/usuarios', function (): void {
     try {
         $currentUser = apiRequireAuthUser();
@@ -316,7 +304,12 @@ $router->post('/api/historico', function (): void {
         ], 500);
     }
 });
-$router->post('/api/chamados', [CalledController::class, 'store']);
+$router->post('/api/chamados', function (): void {
+    $dados = apiReadJsonBody();
+
+    $controller = new TicketController();
+    $controller->criarTicket($dados);
+});
 $router->post('/api/usuarios', function (): void {
     try {
         $dados = apiReadJsonBody();
@@ -365,6 +358,21 @@ $router->post('/api/usuarios', function (): void {
         ], 400);
     }
 });
+
+$router->get('/api/chamado', function (): void {
+
+    $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+
+    if ($id <= 0) {
+        apiJsonResponse([
+            'success' => false,
+            'message' => 'ID do chamado é obrigatório.'
+        ], 400);
+    }
+
+    $controller = new TicketController();
+    $controller->exibir($id);
+});
  
 $router->post('/api/chamados/atribuir-tecnico', function (): void {
     try {
@@ -388,13 +396,14 @@ $router->post('/api/chamados/atribuir-tecnico', function (): void {
             ], 400);
         }
  
-        $actions = new ChamadoActions();
-        $chamado = $actions->atribuirTecnico($chamadoId, $tecnicoId);
- 
-        apiJsonResponse([
-            'success' => true,
-            'data' => $chamado,
-        ]);
+        $controller = new TicketController();
+
+        $controller->atribuirTecnico(
+            $chamadoId,
+            [
+                'id_responsavel' => $tecnicoId
+            ]
+        );
     } catch (InvalidArgumentException $e) {
         apiJsonResponse([
             'success' => false,
@@ -532,22 +541,15 @@ $router->post('/api/chamados/atualizar-status', function (): void {
             ], 400);
         }
  
-        $actions = new ChamadoActions();
-        $currentChamado = $actions->detalhar($chamadoId);
- 
-        if (($currentUser['nivel'] ?? '') === 'tecnico' && (int) ($currentChamado['tecnico_id'] ?? 0) !== (int) ($currentUser['id'] ?? 0)) {
-            apiJsonResponse([
-                'success' => false,
-                'message' => 'Técnico só pode alterar status de chamados atribuídos a si.',
-            ], 403);
-        }
- 
-        $chamadoAtualizado = $actions->atualizarStatus($chamadoId, $status);
- 
-        apiJsonResponse([
-            'success' => true,
-            'data' => $chamadoAtualizado,
-        ]);
+        $controller = new TicketController();
+
+        $controller->atualizarStatus(
+            $chamadoId,
+            [
+                'status' => $status
+            ],
+            $currentUser
+        );
     } catch (InvalidArgumentException $e) {
         apiJsonResponse([
             'success' => false,

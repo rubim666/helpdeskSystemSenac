@@ -407,6 +407,10 @@ const handleUpdateStatus = async (ticketId: number, novoStatus: string) => {
 
         console.log("Status atualizado:", dados.data);
 
+await reloadChamados();
+
+        console.log("Status atualizado:", dados.data);
+
     } catch (erro: any) {
         console.error("Erro na atualização:", erro);
         alert(erro.message || "Erro ao atualizar o status do chamado.");

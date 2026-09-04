@@ -40,10 +40,7 @@ class TicketController extends Controller {
 
     public function listarTicket(): void {
         try {
-            require_once __DIR__ . '/../../Http/Support/ChamadoActions.php'; 
-            
-            $actions = new \ChamadoActions();
-            $chamados = $actions->listarComTecnicoId();
+            $chamados = $this->services->listarTudo();
             
             $this->response([
                 "success" => true,
@@ -114,15 +111,33 @@ class TicketController extends Controller {
         }
     }
 
-    public function atualizarStatus(int $id, array $dadosRequisicao): void {
+    public function atualizarStatus(int $id,array $dadosRequisicao,?array $currentUser = null): void {
         try {
             if (empty($dadosRequisicao['status'])) {
-                throw new InvalidArgumentException("O status é obrigatório.");
+                throw new InvalidArgumentException(
+                    "O status é obrigatório."
+                );
             }
-            $this->services->atualizarStatus($id, $dadosRequisicao);
-            $this->response(["success" => true, "message" => "Status atualizado com sucesso."]);
+            if ($currentUser !== null &&($currentUser['nivel'] ?? '') === 'tecnico') {
+                $ticket = $this->services->exibirTicket($id);
+
+                if (
+                    (int) $ticket->getIdResponsavel()
+                    !==
+                    (int) ($currentUser['id'] ?? 0)
+                ) {
+                    $this->response(["success" => false,"message" => "Técnico só pode alterar status de chamados atribuídos a si."], 403);
+
+                    return;
+                }
+            }
+
+            $ticketAtualizado = $this->services->atualizarStatus($id,$dadosRequisicao);
+
+            $this->response(["success" => true,"message" => "Status atualizado com sucesso.","data" => $ticketAtualizado->getAll()]);
+
         } catch (\Throwable $e) {
-            $this->response(["success" => false, "message" => $e->getMessage()], 400);
+            $this->response(["success" => false,"message" => $e->getMessage()], 400);
         }
     }
 

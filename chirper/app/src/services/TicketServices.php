@@ -22,31 +22,9 @@ class TicketServices {
         $this->repository = new TicketRepository();
     }
 
-    public function listarTudo(): array {
-        $dados = $this->repository->listarTodos();
-        $objetos = [];
-
-        if(!$dados) {
-            return []; 
-        }
-
-        foreach ($dados as $linha) {
-            $ticket = new Ticket(
-                id: $linha['id'],
-                uuid: $linha['uuid'],
-                titulo: $linha['titulo'],
-                descricao: $linha['descricao'], 
-                prioridade: $linha['prioridade'],
-                patrimonio: $linha['patrimonio'],
-                status: $linha['status'],
-                dataAbertura: new \DateTime($linha['data_abertura']),
-                dataEncerramento: $linha['data_encerramento'] ? new \DateTime($linha['data_encerramento']) : null
-            );
-
-            $objetos[] = $ticket;
-        }
-
-        return $objetos;
+        public function listarTudo(): array
+    {
+        return $this->repository->listarTodos();
     }
 
     public function exibirTicket(int $id): Ticket {

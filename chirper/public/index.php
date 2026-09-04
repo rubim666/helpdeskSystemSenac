@@ -9,7 +9,7 @@ require_once __DIR__ . '/../app/Core/Router.php';
 require_once __DIR__ . '/../app/src/configs/Database.php';
 require_once __DIR__ . '/../app/src/models/Ticket.php';
 require_once __DIR__ . '/../app/src/repositories/TicketRepository.php';
-require_once __DIR__ . '/../app/src/controllers/CalledController.php';
+require_once __DIR__ . '/../app/src/controllers/TicketController.php';
 require_once __DIR__ . '/../app/src/controllers/UserController.php';
 
 use App\Core\Router;
