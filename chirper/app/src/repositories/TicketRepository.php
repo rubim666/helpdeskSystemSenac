@@ -98,6 +98,16 @@ class TicketRepository{
         }
     }
 
+    public function ticketNaoResolvido(int $id, string $status):void{
+        try {
+            $sql = 'UPDATE "CHAMADO" SET status = ? WHERE id = ?';
+            $stmt = Database::getConnection()->prepare($sql);
+            $stmt->execute([$status, $id]);
+        } catch (PDOException $e) {
+            throw new RuntimeException("Erro ao marcar chamado como não resolvido no banco",0 , $e);
+        }
+    }
+
     public function atribuirResponsavelTicket(int $ticketId, int $idResponsavel):void {
         try {
             $sql = 'UPDATE "CHAMADO" SET id_responsavel = ? WHERE id = ?';
@@ -243,22 +253,7 @@ class TicketRepository{
         }
     }
 
-    public function calcularTaxaResolucao(int $totalChamados, int $chamadosResolvidos): float {
-        if ($totalChamados === 0) {
-            return 0.0;
-        }
-        $taxa = ($chamadosResolvidos / $totalChamados) * 100;
-        return round($taxa, 2);
-    }
     
-    public function calcularTaxaResolucaoPeriodo(\DateTime $dataInicial, \DateTime $dataFim): float {
-        
-        $totalChamados = $this->contarChamadosPorPeriodo($dataInicial, $dataFim);
-        
-        $chamadosResolvidos = $this->contarChamadosResolvidosPorPeriodo($dataInicial, $dataFim);
-        
-        return $this->calcularTaxaResolucao($totalChamados, $chamadosResolvidos);
-    }
 
     public function relatorioPorCategoria(): array {
         try {
@@ -369,22 +364,30 @@ class TicketRepository{
     }
 
     public function contarChamadosResolvidosPorPeriodo(\DateTime $dataInicial, \DateTime $dataFinal): int {
-        try {
-            $sql = 'SELECT COUNT(*) AS total FROM "CHAMADO" WHERE status = ? AND data_encerramento::DATE BETWEEN ? AND ?';
-            $stmt = Database::getConnection()->prepare($sql);
-            
-            $stmt->execute([
-                'concluido', 
-                $dataInicial->format('Y-m-d'),
-                $dataFinal->format('Y-m-d') 
-            ]);
-            
-            $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
-            return (int)($resultado['total'] ?? 0);
-        } catch (PDOException $e) {
-            throw new RuntimeException("Erro ao contar chamados resolvidos por período", 0, $e);
-        }
+    try {
+        $sql = '
+            SELECT COUNT(*) AS total 
+            FROM "CHAMADO" 
+            WHERE status = :status 
+              AND data_abertura::DATE = :dataInicial 
+              AND data_encerramento::DATE BETWEEN :dataInicial AND :dataFinal
+        ';
+        
+        $stmt = Database::getConnection()->prepare($sql);
+        
+        $stmt->execute([
+            'status'      => 'concluido', 
+            'dataInicial' => $dataInicial->format('Y-m-d'),
+            'dataFinal'   => $dataFinal->format('Y-m-d') 
+        ]);
+        
+        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int)($resultado['total'] ?? 0);
+        
+    } catch (PDOException $e) {
+        throw new RuntimeException("Erro ao contar chamados resolvidos por período", 0, $e);
     }
+}
 
     public function contarChamadosCancelados(\DateTime $dataInicial, \DateTime $dataFinal): int {
         try {
@@ -647,28 +650,26 @@ class TicketRepository{
             $sql = '
                 SELECT AVG(EXTRACT(EPOCH FROM (data_encerramento - data_abertura))) AS media_segundos 
                 FROM "CHAMADO" 
-                WHERE status = ? AND data_encerramento::DATE BETWEEN ? AND ?
+                WHERE status = :status 
+                AND data_abertura::DATE = :dataInicial 
+                AND data_encerramento::DATE BETWEEN :dataInicial AND :dataFinal
             ';
             
             $stmt = Database::getConnection()->prepare($sql);
             $stmt->execute([
-                'concluido',
-                $dataInicial->format('Y-m-d'),
-                $dataFinal->format('Y-m-d')
+                'status'      => 'concluido',
+                'dataInicial' => $dataInicial->format('Y-m-d'),
+                'dataFinal'   => $dataFinal->format('Y-m-d')
             ]);
+            
             $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
             $segundos = (int)($resultado['media_segundos'] ?? 0);
+            
             if ($segundos === 0) {
                 return "0 min";
             }
-            $horas = floor($segundos / 3600);
-            $minutos = floor(($segundos % 3600) / 60);
-
-            if ($horas > 0) {
-                return "{$horas}h {$minutos}min";
-            }
-            return "{$minutos}min";
-
+            $minutos = floor($segundos / 60);
+            return "{$minutos} min";
         } catch (PDOException $e) {
             throw new RuntimeException("Erro ao calcular tempo médio de resolução", 0, $e);
         }
@@ -1040,5 +1041,17 @@ $repository = new \src\repositories\TicketRepository();
 //     echo "Sucesso! Abertos <b>{$qtdAbertosPeriodo}</b>.<br>";
 // } catch (\Exception $e) {
 //     echo "<b>Erro ao contar abertos período:</b> " . $e->getMessage() . "<br>";
+// }
+
+// // =========================================================================
+// // 28. TESTE: set status nao resolvido
+// // =========================================================================
+// echo "<h3>28. Set Status Não Resolvido</h3>";
+// try {
+//     $idChamadoNaoResolvido = 1;
+//     $repository->atualizarStatusTicket($idChamadoNaoResolvido, 'não resolvido');
+//     echo "Sucesso! Status do chamado {$idChamadoNaoResolvido} atualizado para 'não resolvido'.<br>";
+// } catch (\Exception $e) {
+//     echo "<b>Erro ao atualizar status para não resolvido:</b> " . $e->getMessage() . "<br>";
 // }
 ?>

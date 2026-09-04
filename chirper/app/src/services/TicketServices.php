@@ -118,21 +118,34 @@ class TicketServices {
     }
 
     public function encerrarTicket(int $id): Ticket {
-
         $ticket = $this->repository->encontrarTicketPorId($id);
 
         if (!$ticket) {
             throw new \Exception("Ticket não encontrado!");
         }
 
-        if ($ticket->getStatus() === 'concluido') {
-            throw new \Exception("Não é possivel encerrar um ticket ja concluido.");
+        if ($ticket->getStatus() === 'encerrado') {
+            throw new \Exception("Não é possivel encerrar um ticket ja encerrado.");
         }
 
+        $this->repository->encerrarTicket($id, 'encerrado');
+        $ticket->setStatus('encerrado');
+        return $ticket;
+    }
 
-        $this->repository->encerrarTicket($id, 'concluido');
-        $ticket->setStatus('concluido');
+    public function ticketNaoResolvido(int $id): Ticket {
+        $ticket = $this->repository->encontrarTicketPorId($id);
 
+        if (!$ticket) {
+            throw new \Exception("Ticket não encontrado!");
+        }
+
+        if ($ticket->getStatus() === 'não resolvido') {
+            throw new \Exception("Não é possivel marcar um ticket como não resolvido se ele ja estiver com esse status.");
+        }
+
+        $this->repository->ticketNaoResolvido($id, 'não resolvido');
+        $ticket->setStatus('não resolvido');
         return $ticket;
     }
 
@@ -329,10 +342,6 @@ class TicketServices {
         return $dadosLimpos;
     }
 
-    public function calcularTaxaResolucao(int $totalChamados, int $chamadosResolvidos): float {
-        return $this->repository->calcularTaxaResolucao($totalChamados, $chamadosResolvidos);
-    }
-
     public function relatorioPorCategoria(): array {
         $relatorio = $this->repository->relatorioPorCategoria();
         return $relatorio ?: [];
@@ -351,12 +360,22 @@ class TicketServices {
         return $relatorio ?: [];
     }
 
-   public function chamadosAbertosPorPeriodo(\DateTime $dataInicio, \DateTime $dataFim): int {
+    public function chamadosAbertosPorPeriodo(\DateTime $dataInicio, \DateTime $dataFim): int {
         return $this->repository->contarChamadosPorPeriodo($dataInicio, $dataFim);
     }
 
+    public function calcularTaxaResolucao(int $totalChamados, int $chamadosResolvidos): float {
+        if ($totalChamados === 0) {
+            return 0.0;
+        }
+        $taxa = ($chamadosResolvidos / $totalChamados) * 100;
+        return round($taxa, 2);
+    }
+    
     public function calcularTaxaResolucaoPeriodo(\DateTime $dataInicial, \DateTime $dataFim): float {
-        return $this->repository->calcularTaxaResolucaoPeriodo($dataInicial, $dataFim);
+        $totalChamados = $this->contarChamadosPorPeriodo($dataInicial, $dataFim);
+        $chamadosResolvidos = $this->contarChamadosResolvidosPorPeriodo($dataInicial, $dataFim);
+        return $this->calcularTaxaResolucao($totalChamados, $chamadosResolvidos);
     }
 
     // Função para juntar as funções para o relatorio
@@ -364,7 +383,7 @@ class TicketServices {
         $abertos = $this->repository->contarChamadosPorPeriodo($dataInicial, $dataFinal);
         $resolvidos = $this->repository->contarChamadosResolvidosPorPeriodo($dataInicial, $dataFinal);
         $pendentes = $this->repository->contarChamadosPendentesPorPeriodo($dataInicial, $dataFinal);
-        $taxaResolucao = $this->repository->calcularTaxaResolucaoPeriodo($dataInicial, $dataFinal);
+        $taxaResolucao = $this->calcularTaxaResolucaoPeriodo($dataInicial, $dataFinal);
         $tempoResolucao = $this->repository->calcularTempoMedioResolucaoPorPeriodo($dataInicial, $dataFinal);
         
         return [
@@ -793,5 +812,19 @@ $idTeste = 82;
 //     }
 // } catch (\Exception $e) {
 //     echo "<b>Erro ao gerar relatório de categoria por período:</b> " . $e->getMessage() . "<br>";
+// }
+
+// =========================================================================
+// 28. TESTE: ticket não resolvido
+// =========================================================================
+// echo "<h3>28. Marcar Ticket como Não Resolvido</h3>";
+// try {
+//     $ticketNaoResolvido = $service->ticketNaoResolvido(2);
+//     echo "Sucesso! Ticket marcado como não resolvido. Veja o objeto modificado:<br>";
+//     echo "<pre>";
+//     print_r($ticketNaoResolvido);
+//     echo "</pre>";
+// } catch (\Exception $e) {
+//     echo "<b>Erro ao marcar ticket como não resolvido:</b> " . $e->getMessage() . "<br>";
 // }
 ?>
